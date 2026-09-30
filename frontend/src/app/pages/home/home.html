@@ -1,28 +1,123 @@
-<section>
-  <h1>Nos produits</h1>
+<header class="sticky top-0 z-10 border-b border-line bg-white/95 backdrop-blur">
+  <div class="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
+    <a href="#" class="flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-cobalt">
+      <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-cobalt font-display text-lg font-bold text-white">G</span>
+      <span class="font-display text-xl font-bold tracking-tight">G-Tech</span>
+    </a>
+
+    <nav class="hidden items-center gap-6 text-sm font-medium text-ink/70 md:flex">
+      <a href="#" class="text-ink hover:text-cobalt">Accueil</a>
+      <a href="#produits" class="hover:text-cobalt">Produits</a>
+      <a href="#" class="hover:text-cobalt">Services</a>
+      <a href="#" class="hover:text-cobalt">Contact</a>
+    </nav>
+
+    <div class="ml-auto flex items-center gap-3">
+      <label class="hidden items-center gap-2 rounded-full border border-line bg-mist px-4 py-2 text-sm text-ink/60 focus-within:border-cobalt md:flex">
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" placeholder="Rechercher un produit" class="w-48 bg-transparent outline-none placeholder:text-ink/40" />
+      </label>
+      <button type="button" aria-label="Panier" class="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<section class="bg-ink text-white">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-5 md:py-20">
+    <div class="md:col-span-3">
+      <h1 class="max-w-xl font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl">
+        Le bon matériel informatique, livré chez vous à Dakar.
+      </h1>
+      <p class="mt-5 max-w-lg text-lg text-white/70">
+        Ordinateurs, composants et accessoires pour particuliers et entreprises, avec un atelier de maintenance à votre service.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="#produits" class="rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Voir les produits</a>
+        <a href="#" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white hover:border-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Demander une réparation</a>
+      </div>
+    </div>
+
+    <ul class="divide-y divide-white/15 self-center border-y border-white/15 md:col-span-2">
+      <li class="py-4">
+        <p class="font-display font-semibold">Livraison selon votre quartier</p>
+        <p class="mt-1 text-sm text-white/60">Un tarif clair pour chaque zone de Dakar.</p>
+      </li>
+      <li class="py-4">
+        <p class="font-display font-semibold">Paiement à la livraison</p>
+        <p class="mt-1 text-sm text-white/60">Vous payez quand vous recevez votre commande.</p>
+      </li>
+      <li class="py-4">
+        <p class="font-display font-semibold">Maintenance et dépannage</p>
+        <p class="mt-1 text-sm text-white/60">Diagnostic, réparation, installation Windows et logiciels.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<main id="produits" class="mx-auto max-w-6xl px-4 py-12">
+  <div class="mb-8 flex items-end justify-between">
+    <h2 class="font-display text-2xl font-bold tracking-tight md:text-3xl">Nos produits</h2>
+    @if (!loading() && !error()) {
+      <p class="text-sm text-ink/60">{{ products().length }} produit(s) disponible(s)</p>
+    }
+  </div>
 
   @if (loading()) {
-    <p>Chargement des produits...</p>
+    <p class="text-ink/60">Chargement des produits...</p>
   } @else if (error()) {
-    <p>Impossible de charger les produits. Vérifiez que Docker est démarré.</p>
+    <p class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+      Les produits ne se chargent pas. Vérifiez que Docker est démarré, puis actualisez la page.
+    </p>
   } @else if (products().length === 0) {
-    <p>Aucun produit disponible pour le moment.</p>
+    <p class="text-ink/60">Aucun produit disponible pour le moment. Revenez bientôt.</p>
   } @else {
-    <div>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       @for (product of products(); track product.id) {
-        <article>
-          <h2>{{ product.name }}</h2>
-          <p>{{ product.brand }} - {{ product.category?.name }}</p>
-          <p><strong>{{ formatPrice(product.price) }}</strong></p>
-          <p>État : {{ product.state }}</p>
-          <ul>
-            @if (product.processor) { <li>Processeur : {{ product.processor }}</li> }
-            @if (product.ram) { <li>RAM : {{ product.ram }}</li> }
-            @if (product.storage) { <li>Stockage : {{ product.storage }}</li> }
-          </ul>
-          <p>{{ product.stock > 0 ? 'En stock (' + product.stock + ')' : 'Rupture de stock' }}</p>
+        <article class="flex flex-col overflow-hidden rounded-2xl border border-line bg-white">
+          <div class="relative flex aspect-4/3 items-center justify-center bg-mist">
+            <span class="font-display text-6xl font-bold uppercase text-ink/10">{{ product.brand?.slice(0, 2) }}</span>
+            <span class="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-ink shadow-sm">{{ product.state }}</span>
+          </div>
+
+          <div class="flex flex-1 flex-col p-5">
+            <p class="text-sm text-cobalt">{{ product.category?.name }}</p>
+            <h3 class="mt-1 font-display text-lg font-semibold leading-snug">{{ product.name }}</h3>
+            <p class="text-sm text-ink/60">{{ product.brand }}</p>
+
+            <dl class="my-4 space-y-1.5 text-sm">
+              @if (product.processor) {
+                <div class="flex justify-between gap-4"><dt class="text-ink/50">Processeur</dt><dd class="font-medium">{{ product.processor }}</dd></div>
+              }
+              @if (product.ram) {
+                <div class="flex justify-between gap-4"><dt class="text-ink/50">Mémoire</dt><dd class="font-medium">{{ product.ram }}</dd></div>
+              }
+              @if (product.storage) {
+                <div class="flex justify-between gap-4"><dt class="text-ink/50">Stockage</dt><dd class="font-medium">{{ product.storage }}</dd></div>
+              }
+            </dl>
+
+            <div class="mt-auto flex items-end justify-between border-t border-line pt-4">
+              <p class="font-display text-xl font-bold">{{ formatPrice(product.price) }}</p>
+              @if (product.stock === 0) {
+                <span class="text-sm font-medium text-red-600">Rupture de stock</span>
+              } @else if (product.stock <= product.stock_alert_threshold) {
+                <span class="text-sm font-medium text-amber-600">Plus que {{ product.stock }}</span>
+              } @else {
+                <span class="text-sm font-medium text-mint">En stock</span>
+              }
+            </div>
+          </div>
         </article>
       }
     </div>
   }
-</section>
+</main>
+
+<footer class="bg-ink text-white/70">
+  <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm md:flex-row md:justify-between">
+    <p><span class="font-display font-semibold text-white">G-Tech</span> &ndash; Matériel informatique et maintenance</p>
+    <p>Dakar, Sénégal</p>
+  </div>
+</footer>
