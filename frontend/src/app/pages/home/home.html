@@ -1,0 +1,28 @@
+<section>
+  <h1>Nos produits</h1>
+
+  @if (loading()) {
+    <p>Chargement des produits...</p>
+  } @else if (error()) {
+    <p>Impossible de charger les produits. Vérifiez que Docker est démarré.</p>
+  } @else if (products().length === 0) {
+    <p>Aucun produit disponible pour le moment.</p>
+  } @else {
+    <div>
+      @for (product of products(); track product.id) {
+        <article>
+          <h2>{{ product.name }}</h2>
+          <p>{{ product.brand }} - {{ product.category?.name }}</p>
+          <p><strong>{{ formatPrice(product.price) }}</strong></p>
+          <p>État : {{ product.state }}</p>
+          <ul>
+            @if (product.processor) { <li>Processeur : {{ product.processor }}</li> }
+            @if (product.ram) { <li>RAM : {{ product.ram }}</li> }
+            @if (product.storage) { <li>Stockage : {{ product.storage }}</li> }
+          </ul>
+          <p>{{ product.stock > 0 ? 'En stock (' + product.stock + ')' : 'Rupture de stock' }}</p>
+        </article>
+      }
+    </div>
+  }
+</section>
