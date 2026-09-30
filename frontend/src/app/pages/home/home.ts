@@ -1,9 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { CatalogueService } from '../../services/catalogue.service';
 import { Product } from '../../models/catalogue';
 
 @Component({
   selector: 'app-home',
+  imports: [RouterLink],
   templateUrl: './home.html',
 })
 export class Home {
