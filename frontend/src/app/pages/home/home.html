@@ -31,60 +31,147 @@
 </section>
 
 <main id="produits" class="scroll-mt-20 mx-auto max-w-6xl px-4 py-12">
-  <div class="mb-8 flex items-end justify-between">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
     <h2 class="font-display text-2xl font-bold tracking-tight md:text-3xl">{{ title() }}</h2>
-    @if (!loading() && !error()) {
-      <p class="text-sm text-ink/60">{{ countLabel() }}</p>
-    }
+    <div class="flex items-center gap-4">
+      @if (!loading() && !error()) {
+        <p class="text-sm text-ink/60">{{ countLabel() }}</p>
+      }
+      <select #sortSel (change)="setFilter('sort', sortSel.value)" aria-label="Trier les produits" class="rounded-full border border-line bg-white px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-cobalt">
+        @for (s of sorts; track s.value) {
+          <option [value]="s.value" [selected]="(filters().sort ?? '') === s.value">{{ s.label }}</option>
+        }
+      </select>
+    </div>
   </div>
 
-  @if (loading()) {
-    <p class="text-ink/60">Chargement des produits...</p>
-  } @else if (error()) {
-    <p class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-      Les produits ne se chargent pas. Vérifiez que Docker est démarré, puis actualisez la page.
-    </p>
-  } @else if (products().length === 0) {
-    <p class="text-ink/60">{{ emptyMessage() }}</p>
-  } @else {
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      @for (product of products(); track product.id) {
-        <a [routerLink]="['/produits', product.id]" class="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
-          <div class="relative flex aspect-4/3 items-center justify-center bg-mist">
-            <span class="font-display text-6xl font-bold uppercase text-ink/10">{{ product.brand?.slice(0, 2) }}</span>
-            <span class="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-ink shadow-sm">{{ product.state }}</span>
-          </div>
+  <button type="button" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()" class="mb-4 flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-cobalt lg:hidden">
+    Filtres
+    @if (activeCount() > 0) {
+      <span class="rounded-full bg-cobalt px-2 text-xs font-semibold text-white">{{ activeCount() }}</span>
+    }
+  </button>
 
-          <div class="flex flex-1 flex-col p-5">
-            <p class="text-sm text-cobalt">{{ product.category?.name }}</p>
-            <h3 class="mt-1 font-display text-lg font-semibold leading-snug group-hover:text-cobalt">{{ product.name }}</h3>
-            <p class="text-sm text-ink/60">{{ product.brand }}</p>
+  <div class="grid gap-8 lg:grid-cols-4">
+    <aside [class.hidden]="!filtersOpen()" class="space-y-6 rounded-2xl border border-line bg-white p-5 lg:sticky lg:top-24 lg:block lg:self-start">
+      <div class="md:hidden">
+        <h3 class="font-display text-sm font-semibold">Recherche</h3>
+        <input #sq type="search" [value]="filters().search" (keydown.enter)="setFilter('search', sq.value)" placeholder="Nom, marque, référence" class="mt-2 w-full rounded-lg border border-line bg-mist px-3 py-2 text-sm outline-none focus:border-cobalt" />
+      </div>
 
-            <dl class="my-4 space-y-1.5 text-sm">
-              @if (product.processor) {
-                <div class="flex justify-between gap-4"><dt class="text-ink/50">Processeur</dt><dd class="font-medium">{{ product.processor }}</dd></div>
-              }
-              @if (product.ram) {
-                <div class="flex justify-between gap-4"><dt class="text-ink/50">Mémoire</dt><dd class="font-medium">{{ product.ram }}</dd></div>
-              }
-              @if (product.storage) {
-                <div class="flex justify-between gap-4"><dt class="text-ink/50">Stockage</dt><dd class="font-medium">{{ product.storage }}</dd></div>
-              }
-            </dl>
+      <div>
+        <h3 class="font-display text-sm font-semibold">Catégorie</h3>
+        <div class="mt-2 flex flex-col gap-1">
+          <button type="button" (click)="setFilter('category', '')" [class]="optionClass(!filters().category)">
+            <span>Toutes les catégories</span>
+          </button>
+          @for (c of categories(); track c.id) {
+            <button type="button" (click)="setFilter('category', c.slug)" [class]="optionClass(filters().category === c.slug)">
+              <span>{{ c.name }}</span>
+              <span class="text-ink/40">{{ c.products_count }}</span>
+            </button>
+          }
+        </div>
+      </div>
 
-            <div class="mt-auto flex items-end justify-between border-t border-line pt-4">
-              <p class="font-display text-xl font-bold">{{ formatPrice(product.price) }}</p>
-              @if (product.stock === 0) {
-                <span class="text-sm font-medium text-red-600">Rupture de stock</span>
-              } @else if (product.stock <= product.stock_alert_threshold) {
-                <span class="text-sm font-medium text-amber-600">Plus que {{ product.stock }}</span>
-              } @else {
-                <span class="text-sm font-medium text-mint">En stock</span>
-              }
-            </div>
-          </div>
-        </a>
+      <div>
+        <h3 class="font-display text-sm font-semibold">Marque</h3>
+        <select #brandSel (change)="setFilter('brand', brandSel.value)" aria-label="Filtrer par marque" class="mt-2 w-full rounded-lg border border-line bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-cobalt">
+          <option value="" [selected]="!filters().brand">Toutes les marques</option>
+          @for (b of brands(); track b) {
+            <option [value]="b" [selected]="filters().brand === b">{{ b }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <h3 class="font-display text-sm font-semibold">État</h3>
+        <select #stateSel (change)="setFilter('state', stateSel.value)" aria-label="Filtrer par état" class="mt-2 w-full rounded-lg border border-line bg-white px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-cobalt">
+          <option value="" [selected]="!filters().state">Tous les états</option>
+          @for (s of states; track s) {
+            <option [value]="s" [selected]="filters().state === s">{{ s.charAt(0).toUpperCase() + s.slice(1) }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <h3 class="font-display text-sm font-semibold">Prix (FCFA)</h3>
+        <div class="mt-2 flex items-center gap-2">
+          <input #minP type="number" min="0" step="10000" [value]="filters().min_price ?? ''" (change)="setPrice(minP.value, maxP.value)" placeholder="Min" aria-label="Prix minimum" class="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-cobalt" />
+          <span class="text-ink/40">&ndash;</span>
+          <input #maxP type="number" min="0" step="10000" [value]="filters().max_price ?? ''" (change)="setPrice(minP.value, maxP.value)" placeholder="Max" aria-label="Prix maximum" class="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-cobalt" />
+        </div>
+      </div>
+
+      <label class="flex items-center gap-2 text-sm">
+        <input #stockCb type="checkbox" [checked]="filters().in_stock" (change)="toggleStock(stockCb.checked)" class="h-4 w-4 accent-cobalt" />
+        En stock uniquement
+      </label>
+
+      @if (hasCriteria()) {
+        <button type="button" (click)="reset()" class="w-full rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+          Réinitialiser les filtres
+        </button>
+      }
+    </aside>
+
+    <div class="lg:col-span-3">
+      @if (loading()) {
+        <p class="text-ink/60">Chargement des produits...</p>
+      } @else if (error()) {
+        <p class="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+          Les produits ne se chargent pas. Vérifiez que Docker est démarré, puis actualisez la page.
+        </p>
+      } @else if (products().length === 0) {
+        <div class="rounded-2xl border border-line bg-white p-8">
+          <p class="text-ink/70">{{ emptyMessage() }}</p>
+          @if (hasCriteria()) {
+            <button type="button" (click)="reset()" class="mt-4 rounded-full bg-cobalt px-5 py-2 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+              Réinitialiser les filtres
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          @for (product of products(); track product.id) {
+            <a [routerLink]="['/produits', product.id]" class="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+              <div class="relative flex aspect-4/3 items-center justify-center bg-mist">
+                <span class="font-display text-6xl font-bold uppercase text-ink/10">{{ product.brand?.slice(0, 2) }}</span>
+                <span class="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-ink shadow-sm">{{ product.state }}</span>
+              </div>
+
+              <div class="flex flex-1 flex-col p-5">
+                <p class="text-sm text-cobalt">{{ product.category?.name }}</p>
+                <h3 class="mt-1 font-display text-lg font-semibold leading-snug group-hover:text-cobalt">{{ product.name }}</h3>
+                <p class="text-sm text-ink/60">{{ product.brand }}</p>
+
+                <dl class="my-4 space-y-1.5 text-sm">
+                  @if (product.processor) {
+                    <div class="flex justify-between gap-4"><dt class="text-ink/50">Processeur</dt><dd class="font-medium">{{ product.processor }}</dd></div>
+                  }
+                  @if (product.ram) {
+                    <div class="flex justify-between gap-4"><dt class="text-ink/50">Mémoire</dt><dd class="font-medium">{{ product.ram }}</dd></div>
+                  }
+                  @if (product.storage) {
+                    <div class="flex justify-between gap-4"><dt class="text-ink/50">Stockage</dt><dd class="font-medium">{{ product.storage }}</dd></div>
+                  }
+                </dl>
+
+                <div class="mt-auto flex items-end justify-between border-t border-line pt-4">
+                  <p class="font-display text-xl font-bold">{{ formatPrice(product.price) }}</p>
+                  @if (product.stock === 0) {
+                    <span class="text-sm font-medium text-red-600">Rupture de stock</span>
+                  } @else if (product.stock <= product.stock_alert_threshold) {
+                    <span class="text-sm font-medium text-amber-600">Plus que {{ product.stock }}</span>
+                  } @else {
+                    <span class="text-sm font-medium text-mint">En stock</span>
+                  }
+                </div>
+              </div>
+            </a>
+          }
+        </div>
       }
     </div>
-  }
+  </div>
 </main>
