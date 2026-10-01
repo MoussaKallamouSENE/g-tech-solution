@@ -14,10 +14,10 @@
       </nav>
 
       <div class="ml-auto flex items-center gap-3">
-        <label class="hidden items-center gap-2 rounded-full border border-line bg-mist px-4 py-2 text-sm text-ink/60 focus-within:border-cobalt md:flex">
+        <form (submit)="onSearch($event, q.value)" role="search" class="hidden items-center gap-2 rounded-full border border-line bg-mist px-4 py-2 text-sm text-ink/60 focus-within:border-cobalt md:flex">
           <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input type="search" placeholder="Rechercher un produit" class="w-48 bg-transparent outline-none placeholder:text-ink/40" />
-        </label>
+          <input #q type="search" name="q" placeholder="Rechercher un produit" aria-label="Rechercher un produit" class="w-48 bg-transparent outline-none placeholder:text-ink/40" />
+        </form>
         <button type="button" aria-label="Panier" class="flex h-10 w-10 items-center justify-center rounded-full border border-line bg-white hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6 5 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>
         </button>
