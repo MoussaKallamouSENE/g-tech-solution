@@ -29,6 +29,20 @@
           }
         </div>
 
+        @if (p.stock > 0) {
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <div class="flex items-center rounded-full border border-line bg-white">
+              <button type="button" (click)="decrease()" [disabled]="quantity() <= 1" aria-label="Diminuer la quantité" class="h-11 w-11 rounded-full text-lg hover:text-cobalt disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-cobalt">&ndash;</button>
+              <span class="w-8 text-center font-semibold" aria-live="polite">{{ quantity() }}</span>
+              <button type="button" (click)="increase(p)" [disabled]="quantity() >= p.stock" aria-label="Augmenter la quantité" class="h-11 w-11 rounded-full text-lg hover:text-cobalt disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-cobalt">+</button>
+            </div>
+            <button type="button" (click)="addToCart(p)" class="rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Ajouter au panier</button>
+          </div>
+          @if (added()) {
+            <p class="mt-3 text-sm text-mint" role="status">Ajouté au panier. <a routerLink="/panier" class="font-semibold underline">Voir le panier</a></p>
+          }
+        }
+
         @if (p.description) {
           <p class="mt-6 max-w-prose leading-relaxed text-ink/80">{{ p.description }}</p>
         }

@@ -1,0 +1,55 @@
+<div class="mx-auto max-w-6xl px-4 py-10">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Votre panier</h1>
+
+  @if (cart.items().length === 0) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="text-lg font-semibold">Votre panier est vide.</p>
+      <p class="mt-1 text-ink/70">Parcourez nos produits et ajoutez ceux qui vous intéressent.</p>
+      <a routerLink="/" fragment="produits" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Voir les produits</a>
+    </div>
+  } @else {
+    <div class="mt-8 grid gap-8 lg:grid-cols-3">
+      <ul class="space-y-4 lg:col-span-2">
+        @for (item of cart.items(); track item.id) {
+          <li class="flex flex-col gap-4 rounded-2xl border border-line bg-white p-5 sm:flex-row sm:items-center">
+            <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-mist">
+              <span class="font-display text-2xl font-bold uppercase text-ink/20">{{ item.brand?.slice(0, 2) }}</span>
+            </div>
+
+            <div class="flex-1">
+              <a [routerLink]="['/produits', item.id]" class="font-display font-semibold hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">{{ item.name }}</a>
+              <p class="text-sm text-ink/60">{{ item.brand }} &ndash; {{ formatPrice(item.price) }} l'unité</p>
+              <button type="button" (click)="cart.remove(item.id)" class="mt-2 text-sm text-red-600 underline hover:text-red-700 focus-visible:outline-2 focus-visible:outline-red-600">Retirer</button>
+            </div>
+
+            <div class="flex items-center justify-between gap-6 sm:flex-col sm:items-end sm:gap-3">
+              <div class="flex items-center rounded-full border border-line">
+                <button type="button" (click)="cart.setQuantity(item.id, item.quantity - 1)" [disabled]="item.quantity <= 1" aria-label="Diminuer la quantité" class="h-10 w-10 rounded-full hover:text-cobalt disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-cobalt">&ndash;</button>
+                <span class="w-8 text-center font-semibold">{{ item.quantity }}</span>
+                <button type="button" (click)="cart.setQuantity(item.id, item.quantity + 1)" [disabled]="item.quantity >= item.stock" aria-label="Augmenter la quantité" class="h-10 w-10 rounded-full hover:text-cobalt disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-cobalt">+</button>
+              </div>
+              <p class="font-display text-lg font-bold">{{ formatPrice(item.price * item.quantity) }}</p>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <aside class="h-fit rounded-2xl border border-line bg-white p-6 lg:sticky lg:top-24">
+        <h2 class="font-display text-lg font-semibold">Récapitulatif</h2>
+        <dl class="mt-4 space-y-2 text-sm">
+          <div class="flex justify-between"><dt class="text-ink/60">Articles</dt><dd class="font-medium">{{ cart.count() }}</dd></div>
+          <div class="flex justify-between"><dt class="text-ink/60">Livraison</dt><dd class="font-medium">Calculée à la commande</dd></div>
+        </dl>
+        <div class="mt-4 flex items-end justify-between border-t border-line pt-4">
+          <span class="font-semibold">Total</span>
+          <span class="font-display text-2xl font-bold">{{ formatPrice(cart.total()) }}</span>
+        </div>
+
+        <button type="button" disabled class="mt-6 w-full cursor-not-allowed rounded-full bg-cobalt px-6 py-3 font-semibold text-white opacity-40">Passer la commande</button>
+        <p class="mt-2 text-center text-xs text-ink/50">La commande sera disponible très bientôt.</p>
+
+        <button type="button" (click)="cart.clear()" class="mt-4 w-full text-sm text-ink/60 underline hover:text-red-600 focus-visible:outline-2 focus-visible:outline-cobalt">Vider le panier</button>
+      </aside>
+    </div>
+  }
+</div>
