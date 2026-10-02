@@ -9,6 +9,8 @@ import { Orders } from './pages/orders/orders';
 import { OrderDetail } from './pages/order-detail/order-detail';
 import { Admin } from './pages/admin/admin';
 import { AdminOrderPage } from './pages/admin-order/admin-order';
+import { AdminProducts } from './pages/admin-products/admin-products';
+import { AdminProductForm } from './pages/admin-product-form/admin-product-form';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -21,5 +23,8 @@ export const routes: Routes = [
   { path: 'inscription', component: Register },
   { path: 'admin', component: Admin },
   { path: 'admin/commandes/:id', component: AdminOrderPage },
+  { path: 'admin/produits', component: AdminProducts },
+  { path: 'admin/produits/nouveau', component: AdminProductForm },
+  { path: 'admin/produits/:id/modifier', component: AdminProductForm },
   { path: '**', redirectTo: '' },
 ];

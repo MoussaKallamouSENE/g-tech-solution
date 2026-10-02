@@ -1,0 +1,81 @@
+<div class="mx-auto max-w-6xl px-4 py-10">
+  <a routerLink="/admin" class="text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">&larr; Administration</a>
+
+  <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="font-display text-3xl font-bold tracking-tight">Produits <span class="text-base font-normal text-ink/50">({{ total() }})</span></h1>
+    <a routerLink="/admin/produits/nouveau" class="rounded-full bg-cobalt px-5 py-2 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Ajouter un produit</a>
+  </div>
+
+  @if (denied()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Accès réservé aux administrateurs.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark">Se connecter</a>
+    </div>
+  } @else {
+    <div class="mt-6 flex flex-wrap items-center gap-4">
+      <input #sq type="search" (keydown.enter)="setSearch(sq.value)" placeholder="Nom, référence ou marque" aria-label="Rechercher un produit" class="rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-cobalt" />
+      <label class="flex items-center gap-2 text-sm">
+        <input #lc type="checkbox" (change)="toggleLowStock(lc.checked)" class="h-4 w-4 accent-cobalt" />
+        Stock faible uniquement
+      </label>
+    </div>
+
+    @if (notice()) {
+      <p role="status" class="mt-4 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm">{{ notice() }}</p>
+    }
+    @if (problem()) {
+      <p role="alert" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ problem() }}</p>
+    }
+
+    @if (loading()) {
+      <p class="mt-6 text-ink/60">Chargement...</p>
+    } @else if (products().length === 0) {
+      <p class="mt-6 rounded-2xl border border-line bg-white p-6 text-ink/70">Aucun produit ne correspond.</p>
+    } @else {
+      <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white">
+        <table class="w-full min-w-200 text-left text-sm">
+          <thead class="border-b border-line text-ink/60">
+            <tr>
+              <th class="px-4 py-3 font-medium">Produit</th>
+              <th class="px-4 py-3 font-medium">Catégorie</th>
+              <th class="px-4 py-3 text-right font-medium">Prix</th>
+              <th class="px-4 py-3 font-medium">Stock</th>
+              <th class="px-4 py-3 font-medium">Visibilité</th>
+              <th class="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            @for (p of products(); track p.id) {
+              <tr [class.opacity-60]="!p.is_active" class="hover:bg-mist">
+                <td class="px-4 py-3">
+                  <p class="font-medium">{{ p.name }}</p>
+                  <p class="text-ink/50">{{ p.reference }}</p>
+                </td>
+                <td class="px-4 py-3">{{ p.category?.name }}</td>
+                <td class="px-4 py-3 text-right font-semibold">{{ formatPrice(p.price) }}</td>
+                <td class="px-4 py-3">
+                  <input #stk type="number" min="0" [value]="p.stock" (change)="saveStock(p, stk.value)" [attr.aria-label]="'Stock de ' + p.name" class="w-20 rounded-lg border px-2 py-1 outline-none focus:border-cobalt" [class.border-red-300]="isLow(p)" [class.border-line]="!isLow(p)" />
+                  @if (isLow(p)) { <span class="ml-2 text-xs font-medium text-red-600">faible</span> }
+                </td>
+                <td class="px-4 py-3">
+                  <button type="button" (click)="toggleActive(p)" class="rounded-full px-3 py-1 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-cobalt" [class]="p.is_active ? 'bg-mint/15 text-mint' : 'bg-slate-100 text-slate-500'">
+                    {{ p.is_active ? 'Visible' : 'Masqué' }}
+                  </button>
+                </td>
+                <td class="px-4 py-3 text-right"><a [routerLink]="['/admin/produits', p.id, 'modifier']" class="font-medium text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-cobalt">Modifier</a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (lastPage() > 1) {
+        <div class="mt-4 flex items-center justify-center gap-4 text-sm">
+          <button type="button" (click)="go(page() - 1)" [disabled]="page() <= 1" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Précédent</button>
+          <span>Page {{ page() }} sur {{ lastPage() }}</span>
+          <button type="button" (click)="go(page() + 1)" [disabled]="page() >= lastPage()" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Suivant</button>
+        </div>
+      }
+    }
+  }
+</div>

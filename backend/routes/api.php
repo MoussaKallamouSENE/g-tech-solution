@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminOrderController;
+use App\Http\Controllers\Api\AdminProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
@@ -27,6 +28,12 @@ Route::middleware(['auth:sanctum', EnsureAdmin::class])->prefix('admin')->group(
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{id}', [AdminOrderController::class, 'show']);
     Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
+
+    Route::get('/products', [AdminProductController::class, 'index']);
+    Route::post('/products', [AdminProductController::class, 'store']);
+    Route::get('/products/{id}', [AdminProductController::class, 'show']);
+    Route::put('/products/{id}', [AdminProductController::class, 'update']);
+    Route::patch('/products/{id}', [AdminProductController::class, 'patch']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);

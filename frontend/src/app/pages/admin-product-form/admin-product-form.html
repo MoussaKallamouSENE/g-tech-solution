@@ -1,0 +1,106 @@
+<div class="mx-auto max-w-3xl px-4 py-10">
+  <a routerLink="/admin/produits" class="text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">&larr; Produits</a>
+  <h1 class="mt-4 font-display text-3xl font-bold tracking-tight">{{ id ? 'Modifier le produit' : 'Ajouter un produit' }}</h1>
+
+  @if (!ready()) {
+    <p class="mt-8 text-ink/60">Chargement...</p>
+  } @else if (denied()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Accès réservé aux administrateurs.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark">Se connecter</a>
+    </div>
+  } @else if (id && !product()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8"><p class="font-semibold">Produit introuvable.</p></div>
+  } @else {
+    <form #form (submit)="submit($event, form)" class="mt-8 space-y-5 rounded-2xl border border-line bg-white p-6">
+      @if (error()) {
+        <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
+      }
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label for="name" class="text-sm font-medium">Nom du produit</label>
+          <input id="name" name="name" type="text" required [value]="product()?.name ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="reference" class="text-sm font-medium">Référence</label>
+          <input id="reference" name="reference" type="text" required [value]="product()?.reference ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="brand" class="text-sm font-medium">Marque</label>
+          <input id="brand" name="brand" type="text" [value]="product()?.brand ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="category_id" class="text-sm font-medium">Catégorie</label>
+          <select id="category_id" name="category_id" required class="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-cobalt">
+            <option value="">Choisir</option>
+            @for (c of categories(); track c.id) {
+              <option [value]="c.id" [selected]="product()?.category_id === c.id">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="state" class="text-sm font-medium">État</label>
+          <select id="state" name="state" required class="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-cobalt">
+            @for (s of states; track s) {
+              <option [value]="s" [selected]="(product()?.state ?? 'neuf') === s">{{ s.charAt(0).toUpperCase() + s.slice(1) }}</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="price" class="text-sm font-medium">Prix (FCFA)</label>
+          <input id="price" name="price" type="number" min="0" step="1" required [value]="product()?.price ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="stock" class="text-sm font-medium">Stock</label>
+          <input id="stock" name="stock" type="number" min="0" step="1" required [value]="product()?.stock ?? 0" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="stock_alert_threshold" class="text-sm font-medium">Seuil d'alerte de stock</label>
+          <input id="stock_alert_threshold" name="stock_alert_threshold" type="number" min="0" step="1" required [value]="product()?.stock_alert_threshold ?? 3" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+      </div>
+
+      <div>
+        <label for="description" class="text-sm font-medium">Description</label>
+        <textarea id="description" name="description" rows="4" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt">{{ product()?.description ?? '' }}</textarea>
+      </div>
+
+      <fieldset class="grid gap-5 sm:grid-cols-2">
+        <legend class="mb-2 text-sm font-semibold">Caractéristiques (facultatif)</legend>
+        <div>
+          <label for="processor" class="text-sm font-medium">Processeur</label>
+          <input id="processor" name="processor" type="text" [value]="product()?.processor ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="ram" class="text-sm font-medium">Mémoire (RAM)</label>
+          <input id="ram" name="ram" type="text" [value]="product()?.ram ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="storage" class="text-sm font-medium">Stockage</label>
+          <input id="storage" name="storage" type="text" [value]="product()?.storage ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="graphics_card" class="text-sm font-medium">Carte graphique</label>
+          <input id="graphics_card" name="graphics_card" type="text" [value]="product()?.graphics_card ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+        <div>
+          <label for="screen" class="text-sm font-medium">Écran</label>
+          <input id="screen" name="screen" type="text" [value]="product()?.screen ?? ''" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+        </div>
+      </fieldset>
+
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="is_active" [checked]="product()?.is_active ?? true" class="h-4 w-4 accent-cobalt" />
+        Visible sur le site
+      </label>
+
+      <div class="flex flex-wrap gap-3 border-t border-line pt-5">
+        <button type="submit" [disabled]="saving()" class="rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+          {{ saving() ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+        <a routerLink="/admin/produits" class="rounded-full border border-line px-6 py-3 font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Annuler</a>
+      </div>
+    </form>
+  }
+</div>

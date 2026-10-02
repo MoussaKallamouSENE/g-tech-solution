@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Paginated } from '../models/catalogue';
+import { Paginated, Product } from '../models/catalogue';
 import { Order, statusLabel } from './order.service';
 
 export interface AdminStats {
@@ -13,6 +13,24 @@ export interface AdminStats {
 
 export interface AdminOrder extends Order {
   user?: { id: number; name: string; email: string; phone: string | null };
+}
+
+export interface ProductPayload {
+  category_id: number;
+  name: string;
+  reference: string;
+  brand: string | null;
+  description: string | null;
+  price: number;
+  stock: number;
+  stock_alert_threshold: number;
+  processor: string | null;
+  ram: string | null;
+  storage: string | null;
+  graphics_card: string | null;
+  screen: string | null;
+  state: string;
+  is_active: boolean;
 }
 
 export const STATUS_OPTIONS = ['pending', 'confirmed', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'].map(
@@ -44,5 +62,35 @@ export class AdminService {
 
   updateStatus(id: number, status: string): Observable<AdminOrder> {
     return this.http.patch<AdminOrder>(`${this.apiUrl}/orders/${id}/status`, { status });
+  }
+
+  getProducts(filters: { search?: string; low_stock?: boolean; page?: number }): Observable<Paginated<Product>> {
+    let params = new HttpParams();
+    if (filters.search) {
+      params = params.set('search', filters.search);
+    }
+    if (filters.low_stock) {
+      params = params.set('low_stock', '1');
+    }
+    if (filters.page) {
+      params = params.set('page', String(filters.page));
+    }
+    return this.http.get<Paginated<Product>>(`${this.apiUrl}/products`, { params });
+  }
+
+  getProduct(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}/products/${id}`);
+  }
+
+  createProduct(payload: ProductPayload): Observable<Product> {
+    return this.http.post<Product>(`${this.apiUrl}/products`, payload);
+  }
+
+  updateProduct(id: number, payload: ProductPayload): Observable<Product> {
+    return this.http.put<Product>(`${this.apiUrl}/products/${id}`, payload);
+  }
+
+  patchProduct(id: number, changes: { stock?: number; is_active?: boolean }): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/products/${id}`, changes);
   }
 }
