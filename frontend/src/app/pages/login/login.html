@@ -1,0 +1,21 @@
+<div class="mx-auto max-w-md px-4 py-12">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Connexion</h1>
+  <p class="mt-2 text-ink/70">Pas encore de compte ? <a routerLink="/inscription" class="font-semibold text-cobalt underline">Créer un compte</a></p>
+
+  <form (submit)="submit($event, email.value, password.value)" class="mt-8 space-y-5 rounded-2xl border border-line bg-white p-6">
+    @if (error()) {
+      <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
+    }
+    <div>
+      <label for="email" class="text-sm font-medium">Adresse e-mail</label>
+      <input #email id="email" type="email" required autocomplete="email" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <div>
+      <label for="password" class="text-sm font-medium">Mot de passe</label>
+      <input #password id="password" type="password" required autocomplete="current-password" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <button type="submit" [disabled]="loading()" class="w-full rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+      {{ loading() ? 'Connexion...' : 'Se connecter' }}
+    </button>
+  </form>
+</div>

@@ -1,0 +1,33 @@
+<div class="mx-auto max-w-md px-4 py-12">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Créer un compte</h1>
+  <p class="mt-2 text-ink/70">Déjà inscrit ? <a routerLink="/connexion" class="font-semibold text-cobalt underline">Se connecter</a></p>
+
+  <form (submit)="submit($event, name.value, email.value, phone.value, password.value, confirm.value)" class="mt-8 space-y-5 rounded-2xl border border-line bg-white p-6">
+    @if (error()) {
+      <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
+    }
+    <div>
+      <label for="name" class="text-sm font-medium">Nom complet</label>
+      <input #name id="name" type="text" required autocomplete="name" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <div>
+      <label for="email" class="text-sm font-medium">Adresse e-mail</label>
+      <input #email id="email" type="email" required autocomplete="email" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <div>
+      <label for="phone" class="text-sm font-medium">Téléphone (pour la livraison)</label>
+      <input #phone id="phone" type="tel" autocomplete="tel" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <div>
+      <label for="password" class="text-sm font-medium">Mot de passe (8 caractères minimum)</label>
+      <input #password id="password" type="password" required minlength="8" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <div>
+      <label for="confirm" class="text-sm font-medium">Confirmer le mot de passe</label>
+      <input #confirm id="confirm" type="password" required minlength="8" autocomplete="new-password" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+    </div>
+    <button type="submit" [disabled]="loading()" class="w-full rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+      {{ loading() ? 'Création...' : 'Créer mon compte' }}
+    </button>
+  </form>
+</div>
