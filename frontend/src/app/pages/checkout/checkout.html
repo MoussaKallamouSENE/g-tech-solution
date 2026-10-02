@@ -1,0 +1,86 @@
+<div class="mx-auto max-w-6xl px-4 py-10">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Finaliser la commande</h1>
+
+  @if (cart.items().length === 0) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="text-lg font-semibold">Votre panier est vide.</p>
+      <a routerLink="/" fragment="produits" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Voir les produits</a>
+    </div>
+  } @else if (!auth.user()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="text-lg font-semibold">Connectez-vous pour passer commande.</p>
+      <p class="mt-1 text-ink/70">Votre panier est conservé.</p>
+      <div class="mt-5 flex flex-wrap gap-3">
+        <a routerLink="/connexion" class="rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Se connecter</a>
+        <a routerLink="/inscription" class="rounded-full border border-line px-6 py-3 font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Créer un compte</a>
+      </div>
+    </div>
+  } @else {
+    <form (submit)="submit($event, name.value, phone.value, address.value, notes.value)" class="mt-8 grid gap-8 lg:grid-cols-3">
+      <div class="space-y-5 rounded-2xl border border-line bg-white p-6 lg:col-span-2">
+        @if (error()) {
+          <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
+        }
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="name" class="text-sm font-medium">Nom complet</label>
+            <input #name id="name" type="text" required [value]="auth.user()?.name ?? ''" autocomplete="name" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+          </div>
+          <div>
+            <label for="phone" class="text-sm font-medium">Téléphone</label>
+            <input #phone id="phone" type="tel" required [value]="auth.user()?.phone ?? ''" autocomplete="tel" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+          </div>
+        </div>
+        <div>
+          <label for="zone" class="text-sm font-medium">Zone de livraison</label>
+          <select #zoneSel id="zone" required (change)="selectZone(zoneSel.value)" class="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-cobalt">
+            <option value="">Choisir une zone</option>
+            @for (z of zones(); track z.id) {
+              <option [value]="z.id">{{ z.name }} (+{{ formatPrice(z.fee) }})</option>
+            }
+          </select>
+        </div>
+        <div>
+          <label for="address" class="text-sm font-medium">Adresse de livraison</label>
+          <textarea #address id="address" rows="3" required placeholder="Quartier, rue, repère" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt"></textarea>
+        </div>
+        <div>
+          <label for="notes" class="text-sm font-medium">Remarques (facultatif)</label>
+          <textarea #notes id="notes" rows="2" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt"></textarea>
+        </div>
+        <div class="rounded-xl bg-mist p-4 text-sm">
+          <p class="font-semibold">Paiement à la livraison</p>
+          <p class="mt-1 text-ink/70">Vous réglez en espèces à la réception de votre commande. D'autres moyens de paiement seront ajoutés plus tard.</p>
+        </div>
+      </div>
+
+      <aside class="h-fit rounded-2xl border border-line bg-white p-6 lg:sticky lg:top-24">
+        <h2 class="font-display text-lg font-semibold">Votre commande</h2>
+        <ul class="mt-4 space-y-2 text-sm">
+          @for (item of cart.items(); track item.id) {
+            <li class="flex justify-between gap-3">
+              <span>{{ item.quantity }} × {{ item.name }}</span>
+              <span class="shrink-0 font-medium">{{ formatPrice(item.price * item.quantity) }}</span>
+            </li>
+          }
+        </ul>
+        <dl class="mt-4 space-y-2 border-t border-line pt-4 text-sm">
+          <div class="flex justify-between"><dt class="text-ink/60">Sous-total</dt><dd class="font-medium">{{ formatPrice(cart.total()) }}</dd></div>
+          <div class="flex justify-between">
+            <dt class="text-ink/60">Livraison</dt>
+            <dd class="font-medium">
+              @if (zoneId() !== null) { {{ formatPrice(fee()) }} } @else { À choisir }
+            </dd>
+          </div>
+        </dl>
+        <div class="mt-4 flex items-end justify-between border-t border-line pt-4">
+          <span class="font-semibold">Total</span>
+          <span class="font-display text-2xl font-bold">{{ formatPrice(total()) }}</span>
+        </div>
+        <button type="submit" [disabled]="loading()" class="mt-6 w-full rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+          {{ loading() ? 'Envoi...' : 'Confirmer la commande' }}
+        </button>
+      </aside>
+    </form>
+  }
+</div>

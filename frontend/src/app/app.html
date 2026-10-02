@@ -20,7 +20,7 @@
         </form>
 
         @if (auth.user(); as user) {
-          <span class="hidden text-sm font-medium sm:block">{{ user.name }}</span>
+          <a routerLink="/commandes" title="Mes commandes" class="hidden text-sm font-medium hover:text-cobalt sm:block">{{ user.name }}</a>
           <button type="button" (click)="logout()" class="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Déconnexion</button>
         } @else {
           <a routerLink="/connexion" class="rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Connexion</a>

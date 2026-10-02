@@ -45,8 +45,8 @@
           <span class="font-display text-2xl font-bold">{{ formatPrice(cart.total()) }}</span>
         </div>
 
-        <button type="button" disabled class="mt-6 w-full cursor-not-allowed rounded-full bg-cobalt px-6 py-3 font-semibold text-white opacity-40">Passer la commande</button>
-        <p class="mt-2 text-center text-xs text-ink/50">La commande sera disponible très bientôt.</p>
+        <a routerLink="/commande" class="mt-6 block w-full rounded-full bg-cobalt px-6 py-3 text-center font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Passer la commande</a>
+        <p class="mt-2 text-center text-xs text-ink/50">Paiement à la livraison.</p>
 
         <button type="button" (click)="cart.clear()" class="mt-4 w-full text-sm text-ink/60 underline hover:text-red-600 focus-visible:outline-2 focus-visible:outline-cobalt">Vider le panier</button>
       </aside>

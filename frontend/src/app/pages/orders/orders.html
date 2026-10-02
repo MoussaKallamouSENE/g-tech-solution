@@ -1,0 +1,33 @@
+<div class="mx-auto max-w-4xl px-4 py-10">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Mes commandes</h1>
+
+  @if (loading()) {
+    <p class="mt-8 text-ink/60">Chargement...</p>
+  } @else if (error()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Impossible d'afficher vos commandes.</p>
+      <p class="mt-1 text-ink/70">Vous n'êtes peut-être pas connecté.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Se connecter</a>
+    </div>
+  } @else if (list().length === 0) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Vous n'avez pas encore passé de commande.</p>
+      <a routerLink="/" fragment="produits" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Voir les produits</a>
+    </div>
+  } @else {
+    <ul class="mt-8 space-y-4">
+      @for (o of list(); track o.id) {
+        <li>
+          <a [routerLink]="['/commandes', o.id]" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-white p-5 hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+            <div>
+              <p class="font-display font-semibold">{{ o.number }}</p>
+              <p class="text-sm text-ink/60">{{ formatDate(o.created_at) }} &ndash; {{ o.items_count }} article(s)</p>
+            </div>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+            <p class="font-display text-lg font-bold">{{ formatPrice(o.total) }}</p>
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</div>
