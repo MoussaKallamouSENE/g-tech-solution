@@ -7,6 +7,8 @@ import { Register } from './pages/register/register';
 import { Checkout } from './pages/checkout/checkout';
 import { Orders } from './pages/orders/orders';
 import { OrderDetail } from './pages/order-detail/order-detail';
+import { Admin } from './pages/admin/admin';
+import { AdminOrderPage } from './pages/admin-order/admin-order';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -17,5 +19,7 @@ export const routes: Routes = [
   { path: 'commandes/:id', component: OrderDetail },
   { path: 'connexion', component: Login },
   { path: 'inscription', component: Register },
+  { path: 'admin', component: Admin },
+  { path: 'admin/commandes/:id', component: AdminOrderPage },
   { path: '**', redirectTo: '' },
 ];

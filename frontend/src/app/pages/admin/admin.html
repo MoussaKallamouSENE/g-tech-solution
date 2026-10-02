@@ -1,0 +1,84 @@
+<div class="mx-auto max-w-6xl px-4 py-10">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Administration</h1>
+
+  @if (denied()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Accès réservé aux administrateurs.</p>
+      <p class="mt-1 text-ink/70">Connectez-vous avec un compte administrateur pour voir cette page.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Se connecter</a>
+    </div>
+  } @else {
+    @if (stats(); as s) {
+      <div class="mt-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="rounded-2xl border border-line bg-white p-5">
+          <p class="text-sm text-ink/60">Commandes</p>
+          <p class="mt-1 font-display text-2xl font-bold">{{ s.orders_total }}</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-white p-5">
+          <p class="text-sm text-ink/60">En attente</p>
+          <p class="mt-1 font-display text-2xl font-bold text-amber-600">{{ s.orders_pending }}</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-white p-5">
+          <p class="text-sm text-ink/60">Chiffre d'affaires (livré)</p>
+          <p class="mt-1 font-display text-2xl font-bold">{{ formatPrice(s.revenue) }}</p>
+        </div>
+        <div class="rounded-2xl border border-line bg-white p-5">
+          <p class="text-sm text-ink/60">Produits en stock faible</p>
+          <p class="mt-1 font-display text-2xl font-bold text-red-600">{{ s.low_stock }}</p>
+        </div>
+      </div>
+    }
+
+    <div class="mt-10 flex flex-wrap items-center justify-between gap-3">
+      <h2 class="font-display text-xl font-bold">Commandes <span class="text-base font-normal text-ink/50">({{ total() }})</span></h2>
+      <div class="flex flex-wrap gap-3">
+        <input #sq type="search" (keydown.enter)="setSearch(sq.value)" placeholder="N°, nom ou téléphone" aria-label="Rechercher une commande" class="rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-cobalt" />
+        <select #st (change)="setStatus(st.value)" aria-label="Filtrer par statut" class="rounded-full border border-line bg-white px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-cobalt">
+          <option value="">Tous les statuts</option>
+          @for (o of options; track o.value) {
+            <option [value]="o.value">{{ o.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p class="mt-6 text-ink/60">Chargement...</p>
+    } @else if (orders().length === 0) {
+      <p class="mt-6 rounded-2xl border border-line bg-white p-6 text-ink/70">Aucune commande ne correspond.</p>
+    } @else {
+      <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white">
+        <table class="w-full min-w-160 text-left text-sm">
+          <thead class="border-b border-line text-ink/60">
+            <tr>
+              <th class="px-4 py-3 font-medium">N°</th>
+              <th class="px-4 py-3 font-medium">Date</th>
+              <th class="px-4 py-3 font-medium">Client</th>
+              <th class="px-4 py-3 font-medium">Statut</th>
+              <th class="px-4 py-3 text-right font-medium">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            @for (o of orders(); track o.id) {
+              <tr class="hover:bg-mist">
+                <td class="px-4 py-3"><a [routerLink]="['/admin/commandes', o.id]" class="font-display font-semibold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-cobalt">{{ o.number }}</a></td>
+                <td class="px-4 py-3">{{ formatDate(o.created_at) }}</td>
+                <td class="px-4 py-3">{{ o.customer_name }}<br /><span class="text-ink/50">{{ o.customer_phone }}</span></td>
+                <td class="px-4 py-3"><span class="rounded-full px-3 py-1 text-xs font-semibold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span></td>
+                <td class="px-4 py-3 text-right font-semibold">{{ formatPrice(o.total) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (lastPage() > 1) {
+        <div class="mt-4 flex items-center justify-center gap-4 text-sm">
+          <button type="button" (click)="go(page() - 1)" [disabled]="page() <= 1" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Précédent</button>
+          <span>Page {{ page() }} sur {{ lastPage() }}</span>
+          <button type="button" (click)="go(page() + 1)" [disabled]="page() >= lastPage()" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Suivant</button>
+        </div>
+      }
+    }
+  }
+</div>
