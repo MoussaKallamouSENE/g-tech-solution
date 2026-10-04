@@ -20,6 +20,21 @@ export class OrderDetail {
   protected readonly statusLabel = statusLabel;
   protected readonly statusClass = statusClass;
 
+  protected readonly invoiceBusy = signal(false);
+  protected readonly invoiceError = signal('');
+
+  protected downloadInvoice(o: Order): void {
+    this.invoiceError.set('');
+    this.invoiceBusy.set(true);
+    this.service.downloadInvoice(o.id, o.number).subscribe({
+      next: () => this.invoiceBusy.set(false),
+      error: () => {
+        this.invoiceError.set('Impossible de télécharger la facture. Réessayez.');
+        this.invoiceBusy.set(false);
+      },
+    });
+  }
+
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.service.getOrder(id).subscribe({

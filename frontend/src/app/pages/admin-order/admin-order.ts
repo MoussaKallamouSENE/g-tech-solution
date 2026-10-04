@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminOrder, AdminService, STATUS_OPTIONS } from '../../services/admin.service';
-import { formatDate, formatPrice, statusClass, statusLabel } from '../../services/order.service';
+import { OrderService, formatDate, formatPrice, statusClass, statusLabel } from '../../services/order.service';
 import { errorMessage } from '../../services/auth.service';
 
 @Component({
@@ -13,6 +13,7 @@ import { errorMessage } from '../../services/auth.service';
 export class AdminOrderPage {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(AdminService);
+  private readonly orders = inject(OrderService);
 
   protected readonly order = signal<AdminOrder | null>(null);
   protected readonly loading = signal(true);
@@ -26,6 +27,21 @@ export class AdminOrderPage {
   protected readonly formatDate = formatDate;
   protected readonly statusLabel = statusLabel;
   protected readonly statusClass = statusClass;
+
+  protected readonly invoiceBusy = signal(false);
+  protected readonly invoiceError = signal('');
+
+  protected downloadInvoice(o: AdminOrder): void {
+    this.invoiceError.set('');
+    this.invoiceBusy.set(true);
+    this.orders.downloadInvoice(o.id, o.number).subscribe({
+      next: () => this.invoiceBusy.set(false),
+      error: () => {
+        this.invoiceError.set('Impossible de télécharger la facture. Réessayez.');
+        this.invoiceBusy.set(false);
+      },
+    });
+  }
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));

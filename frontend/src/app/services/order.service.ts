@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface DeliveryZone {
   id: number;
@@ -89,6 +89,19 @@ export class OrderService {
 
   createOrder(payload: OrderPayload): Observable<Order> {
     return this.http.post<Order>(`${this.apiUrl}/orders`, payload);
+  }
+
+  downloadInvoice(id: number, number: string): Observable<void> {
+    return this.http.get(`${this.apiUrl}/orders/${id}/invoice`, { responseType: 'blob' }).pipe(
+      map((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `facture-${number}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }),
+    );
   }
 
   getOrders(): Observable<Order[]> {

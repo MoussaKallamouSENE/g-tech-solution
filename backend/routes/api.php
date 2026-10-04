@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:20,1');
     Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::get('/orders/{id}/invoice', [OrderController::class, 'invoice']);
 });
 
 Route::middleware(['auth:sanctum', EnsureAdmin::class])->prefix('admin')->group(function () {

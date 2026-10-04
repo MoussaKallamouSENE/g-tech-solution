@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,24 @@ class OrderController extends Controller
             ->latest()
             ->orderByDesc('id')
             ->get();
+    }
+
+    public function invoice(Request $request, int $id)
+    {
+        $user = $request->user();
+        $query = Order::with(['items', 'zone']);
+
+        if ($user->role !== 'admin') {
+            $query->where('user_id', $user->id);
+        }
+
+        $order = $query->findOrFail($id);
+
+        abort_if($order->status === 'cancelled', 422, "Une commande annulée n'a pas de facture.");
+
+        return Pdf::loadView('invoice', ['order' => $order])
+            ->setPaper('a4')
+            ->download('facture-'.$order->number.'.pdf');
     }
 
     public function show(Request $request, int $id)
