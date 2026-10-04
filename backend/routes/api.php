@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DeliveryZoneController;
+use App\Http\Controllers\Api\AdminMaintenanceController;
+use App\Http\Controllers\Api\MaintenanceRequestController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Middleware\EnsureAdmin;
@@ -36,12 +38,15 @@ Route::middleware(['auth:sanctum', EnsureAdmin::class])->prefix('admin')->group(
     Route::put('/products/{id}', [AdminProductController::class, 'update']);
     Route::patch('/products/{id}', [AdminProductController::class, 'patch']);
     Route::post('/products/{id}/image', [AdminProductController::class, 'uploadImage']);
+    Route::get('/maintenance-requests', [AdminMaintenanceController::class, 'index']);
+    Route::patch('/maintenance-requests/{id}', [AdminMaintenanceController::class, 'update']);
     Route::delete('/products/{id}/image', [AdminProductController::class, 'deleteImage']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/brands', [BrandController::class, 'index']);
 Route::get('/delivery-zones', [DeliveryZoneController::class, 'index']);
+Route::post('/maintenance-requests', [MaintenanceRequestController::class, 'store'])->middleware('throttle:10,1');
 
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);

@@ -7,10 +7,12 @@ import { Register } from './pages/register/register';
 import { Checkout } from './pages/checkout/checkout';
 import { Orders } from './pages/orders/orders';
 import { OrderDetail } from './pages/order-detail/order-detail';
+import { Services } from './pages/services/services';
 import { Admin } from './pages/admin/admin';
 import { AdminOrderPage } from './pages/admin-order/admin-order';
 import { AdminProducts } from './pages/admin-products/admin-products';
 import { AdminProductForm } from './pages/admin-product-form/admin-product-form';
+import { AdminMaintenance } from './pages/admin-maintenance/admin-maintenance';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -19,6 +21,7 @@ export const routes: Routes = [
   { path: 'commande', component: Checkout },
   { path: 'commandes', component: Orders },
   { path: 'commandes/:id', component: OrderDetail },
+  { path: 'services', component: Services },
   { path: 'connexion', component: Login },
   { path: 'inscription', component: Register },
   { path: 'admin', component: Admin },
@@ -26,5 +29,6 @@ export const routes: Routes = [
   { path: 'admin/produits', component: AdminProducts },
   { path: 'admin/produits/nouveau', component: AdminProductForm },
   { path: 'admin/produits/:id/modifier', component: AdminProductForm },
+  { path: 'admin/maintenance', component: AdminMaintenance },
   { path: '**', redirectTo: '' },
 ];
