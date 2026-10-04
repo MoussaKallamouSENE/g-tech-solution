@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -33,6 +34,13 @@ class Product extends Model
         'stock_alert_threshold' => 'integer',
         'is_active' => 'boolean',
     ];
+
+    protected $appends = ['image_url'];
+
+    protected function imageUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->image ? asset($this->image) : null);
+    }
 
     public function category(): BelongsTo
     {

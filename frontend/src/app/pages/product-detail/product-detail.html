@@ -9,7 +9,11 @@
   } @else if (product(); as p) {
     <div class="mt-6 grid gap-10 md:grid-cols-2">
       <div class="relative flex aspect-square items-center justify-center rounded-2xl border border-line bg-white">
-        <span class="font-display text-8xl font-bold uppercase text-ink/10">{{ p.brand?.slice(0, 2) }}</span>
+        @if (p.image_url) {
+          <img [src]="p.image_url" [alt]="p.name" class="h-full w-full object-contain p-6" />
+        } @else {
+          <span class="font-display text-8xl font-bold uppercase text-ink/10">{{ p.brand?.slice(0, 2) }}</span>
+        }
         <span class="absolute left-4 top-4 rounded-full bg-mist px-3 py-1 text-xs font-semibold capitalize">{{ p.state }}</span>
       </div>
 

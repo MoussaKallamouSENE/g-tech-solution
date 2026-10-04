@@ -90,6 +90,16 @@ export class AdminService {
     return this.http.put<Product>(`${this.apiUrl}/products/${id}`, payload);
   }
 
+  uploadImage(id: number, file: File): Observable<Product> {
+    const body = new FormData();
+    body.append('image', file);
+    return this.http.post<Product>(`${this.apiUrl}/products/${id}/image`, body);
+  }
+
+  deleteImage(id: number): Observable<Product> {
+    return this.http.delete<Product>(`${this.apiUrl}/products/${id}/image`);
+  }
+
   patchProduct(id: number, changes: { stock?: number; is_active?: boolean }): Observable<Product> {
     return this.http.patch<Product>(`${this.apiUrl}/products/${id}`, changes);
   }

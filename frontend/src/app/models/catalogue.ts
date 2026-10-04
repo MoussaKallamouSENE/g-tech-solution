@@ -27,6 +27,7 @@ export interface Product {
   state: string;
   image: string | null;
   is_active: boolean;
+  image_url?: string | null;
   category?: Category;
 }
 

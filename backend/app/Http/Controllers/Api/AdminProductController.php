@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -100,6 +101,48 @@ class AdminProductController extends Controller
         $product->update($request->validate($this->rules($product->id), $this->messages()));
 
         return $product->load('category');
+    }
+
+    public function uploadImage(Request $request, int $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $request->validate([
+            'image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ], [
+            'image.required' => 'Choisissez une image.',
+            'image.mimes' => "L'image doit être au format JPG, PNG ou WebP.",
+            'image.max' => "L'image est trop lourde (2 Mo maximum).",
+            'image.uploaded' => "L'envoi a échoué : l'image dépasse probablement 2 Mo.",
+        ]);
+
+        $file = $request->file('image');
+        $directory = public_path('uploads/products');
+        File::ensureDirectoryExists($directory);
+
+        $name = Str::uuid()->toString().'.'.$file->guessExtension();
+        $file->move($directory, $name);
+
+        $this->removeImageFile($product);
+        $product->update(['image' => 'uploads/products/'.$name]);
+
+        return $product->fresh()->load('category');
+    }
+
+    public function deleteImage(int $id)
+    {
+        $product = Product::findOrFail($id);
+        $this->removeImageFile($product);
+        $product->update(['image' => null]);
+
+        return $product->fresh()->load('category');
+    }
+
+    private function removeImageFile(Product $product): void
+    {
+        if ($product->image && str_starts_with($product->image, 'uploads/products/')) {
+            File::delete(public_path($product->image));
+        }
     }
 
     public function patch(Request $request, int $id)

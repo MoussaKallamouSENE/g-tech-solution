@@ -34,6 +34,7 @@ export class AdminProductForm {
       this.admin.getProduct(this.id).subscribe({
         next: (product) => {
           this.product.set(product);
+          this.imageUrl.set(product.image_url ?? null);
           this.ready.set(true);
         },
         error: (err: HttpErrorResponse) => {
@@ -46,6 +47,59 @@ export class AdminProductForm {
     } else {
       this.ready.set(true);
     }
+  }
+
+  protected readonly imageUrl = signal<string | null>(null);
+  protected readonly imageBusy = signal(false);
+  protected readonly imageMessage = signal('');
+  protected readonly imageError = signal('');
+
+  protected uploadImage(input: HTMLInputElement): void {
+    const file = input.files?.[0];
+    if (!file || !this.id) {
+      return;
+    }
+    this.imageMessage.set('');
+    this.imageError.set('');
+    if (file.size > 2 * 1024 * 1024) {
+      this.imageError.set("L'image est trop lourde (2 Mo maximum).");
+      input.value = '';
+      return;
+    }
+    this.imageBusy.set(true);
+    this.admin.uploadImage(this.id, file).subscribe({
+      next: (updated) => {
+        this.imageUrl.set(updated.image_url ?? null);
+        this.imageMessage.set('Image enregistrée.');
+        this.imageBusy.set(false);
+        input.value = '';
+      },
+      error: (err: HttpErrorResponse) => {
+        this.imageError.set(errorMessage(err));
+        this.imageBusy.set(false);
+        input.value = '';
+      },
+    });
+  }
+
+  protected removeImage(): void {
+    if (!this.id) {
+      return;
+    }
+    this.imageMessage.set('');
+    this.imageError.set('');
+    this.imageBusy.set(true);
+    this.admin.deleteImage(this.id).subscribe({
+      next: () => {
+        this.imageUrl.set(null);
+        this.imageMessage.set('Image supprimée.');
+        this.imageBusy.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.imageError.set(errorMessage(err));
+        this.imageBusy.set(false);
+      },
+    });
   }
 
   protected submit(event: Event, form: HTMLFormElement): void {

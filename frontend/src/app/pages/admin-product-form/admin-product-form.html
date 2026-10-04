@@ -12,6 +12,36 @@
   } @else if (id && !product()) {
     <div class="mt-8 rounded-2xl border border-line bg-white p-8"><p class="font-semibold">Produit introuvable.</p></div>
   } @else {
+    @if (id) {
+      <div class="mt-8 rounded-2xl border border-line bg-white p-6">
+        <h2 class="font-display text-base font-semibold">Image du produit</h2>
+        <div class="mt-4 flex flex-wrap items-center gap-6">
+          <div class="flex h-32 w-32 items-center justify-center overflow-hidden rounded-xl bg-mist">
+            @if (imageUrl(); as url) {
+              <img [src]="url" alt="Image du produit" class="h-full w-full object-contain p-2" />
+            } @else {
+              <span class="px-2 text-center text-xs text-ink/50">Aucune image</span>
+            }
+          </div>
+          <div class="space-y-3 text-sm">
+            <input #file type="file" accept="image/jpeg,image/png,image/webp" (change)="uploadImage(file)" [disabled]="imageBusy()" aria-label="Choisir une image" class="block text-sm" />
+            <p class="text-ink/50">JPG, PNG ou WebP, 2 Mo maximum. L'image est enregistrée dès son choix.</p>
+            @if (imageUrl()) {
+              <button type="button" (click)="removeImage()" [disabled]="imageBusy()" class="text-red-600 underline focus-visible:outline-2 focus-visible:outline-red-600">Supprimer l'image</button>
+            }
+          </div>
+        </div>
+        @if (imageMessage()) {
+          <p role="status" class="mt-4 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm">{{ imageMessage() }}</p>
+        }
+        @if (imageError()) {
+          <p role="alert" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ imageError() }}</p>
+        }
+      </div>
+    } @else {
+      <p class="mt-6 rounded-lg bg-mist p-3 text-sm text-ink/70">Enregistrez d'abord le produit, puis modifiez-le pour ajouter son image.</p>
+    }
+
     <form #form (submit)="submit($event, form)" class="mt-8 space-y-5 rounded-2xl border border-line bg-white p-6">
       @if (error()) {
         <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>

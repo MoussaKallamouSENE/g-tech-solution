@@ -136,7 +136,11 @@
           @for (product of products(); track product.id) {
             <a [routerLink]="['/produits', product.id]" class="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
               <div class="relative flex aspect-4/3 items-center justify-center bg-mist">
-                <span class="font-display text-6xl font-bold uppercase text-ink/10">{{ product.brand?.slice(0, 2) }}</span>
+                @if (product.image_url) {
+                  <img [src]="product.image_url" [alt]="product.name" loading="lazy" class="h-full w-full object-contain p-4" />
+                } @else {
+                  <span class="font-display text-6xl font-bold uppercase text-ink/10">{{ product.brand?.slice(0, 2) }}</span>
+                }
                 <span class="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold capitalize text-ink shadow-sm">{{ product.state }}</span>
               </div>
 

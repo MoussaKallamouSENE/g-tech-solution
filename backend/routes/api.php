@@ -34,6 +34,8 @@ Route::middleware(['auth:sanctum', EnsureAdmin::class])->prefix('admin')->group(
     Route::get('/products/{id}', [AdminProductController::class, 'show']);
     Route::put('/products/{id}', [AdminProductController::class, 'update']);
     Route::patch('/products/{id}', [AdminProductController::class, 'patch']);
+    Route::post('/products/{id}/image', [AdminProductController::class, 'uploadImage']);
+    Route::delete('/products/{id}/image', [AdminProductController::class, 'deleteImage']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
