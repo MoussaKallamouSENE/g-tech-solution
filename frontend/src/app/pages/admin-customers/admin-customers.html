@@ -1,0 +1,55 @@
+<div class="px-4 py-8 lg:px-10">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Clients <span class="text-base font-normal text-ink/50">({{ total() }})</span></h1>
+
+  @if (denied()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Accès réservé aux administrateurs.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark">Se connecter</a>
+    </div>
+  } @else {
+    <div class="mt-6">
+      <input #sq type="search" (keydown.enter)="setSearch(sq.value)" placeholder="Nom, e-mail ou téléphone" aria-label="Rechercher un client" class="rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-cobalt" />
+    </div>
+
+    @if (loading()) {
+      <p class="mt-6 text-ink/60">Chargement...</p>
+    } @else if (customers().length === 0) {
+      <p class="mt-6 rounded-2xl border border-line bg-white p-6 text-ink/70">Aucun client ne correspond.</p>
+    } @else {
+      <div class="mt-6 overflow-x-auto rounded-2xl border border-line bg-white">
+        <table class="w-full min-w-160 text-left text-sm">
+          <thead class="border-b border-line text-ink/60">
+            <tr>
+              <th class="px-4 py-3 font-medium">Client</th>
+              <th class="px-4 py-3 font-medium">Téléphone</th>
+              <th class="px-4 py-3 font-medium">Inscrit le</th>
+              <th class="px-4 py-3 text-right font-medium">Commandes</th>
+              <th class="px-4 py-3 text-right font-medium">Total dépensé</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            @for (c of customers(); track c.id) {
+              <tr class="hover:bg-mist">
+                <td class="px-4 py-3"><p class="font-medium">{{ c.name }}</p><p class="text-ink/50">{{ c.email }}</p></td>
+                <td class="px-4 py-3">
+                  @if (c.phone) { <a [href]="'tel:' + c.phone" class="text-cobalt hover:underline">{{ c.phone }}</a> } @else { <span class="text-ink/40">&ndash;</span> }
+                </td>
+                <td class="px-4 py-3">{{ formatDate(c.created_at) }}</td>
+                <td class="px-4 py-3 text-right">{{ c.orders_count }}</td>
+                <td class="px-4 py-3 text-right font-semibold">{{ formatPrice(+(c.spent ?? 0)) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (lastPage() > 1) {
+        <div class="mt-4 flex items-center justify-center gap-4 text-sm">
+          <button type="button" (click)="go(page() - 1)" [disabled]="page() <= 1" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Précédent</button>
+          <span>Page {{ page() }} sur {{ lastPage() }}</span>
+          <button type="button" (click)="go(page() + 1)" [disabled]="page() >= lastPage()" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Suivant</button>
+        </div>
+      }
+    }
+  }
+</div>

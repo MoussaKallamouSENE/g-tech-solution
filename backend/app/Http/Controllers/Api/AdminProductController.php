@@ -145,6 +145,15 @@ class AdminProductController extends Controller
         }
     }
 
+    public function destroy(int $id)
+    {
+        $product = Product::findOrFail($id);
+        $this->removeImageFile($product);
+        $product->delete();
+
+        return response()->noContent();
+    }
+
     public function patch(Request $request, int $id)
     {
         $product = Product::findOrFail($id);

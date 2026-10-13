@@ -15,6 +15,8 @@ import { AdminOrderPage } from './pages/admin-order/admin-order';
 import { AdminProducts } from './pages/admin-products/admin-products';
 import { AdminProductForm } from './pages/admin-product-form/admin-product-form';
 import { AdminMaintenance } from './pages/admin-maintenance/admin-maintenance';
+import { AdminCustomers } from './pages/admin-customers/admin-customers';
+import { AdminSettings } from './pages/admin-settings/admin-settings';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -36,7 +38,9 @@ export const routes: Routes = [
       { path: 'produits', component: AdminProducts },
       { path: 'produits/nouveau', component: AdminProductForm },
       { path: 'produits/:id/modifier', component: AdminProductForm },
+      { path: 'clients', component: AdminCustomers },
       { path: 'maintenance', component: AdminMaintenance },
+      { path: 'boutique', component: AdminSettings },
     ],
   },
   { path: '**', redirectTo: '' },

@@ -87,6 +87,33 @@ export class AdminProducts {
     });
   }
 
+  protected readonly confirmId = signal<number | null>(null);
+
+  protected askDelete(p: Product): void {
+    this.notice.set('');
+    this.problem.set('');
+    this.confirmId.set(p.id);
+  }
+
+  protected cancelDelete(): void {
+    this.confirmId.set(null);
+  }
+
+  protected confirmDelete(p: Product): void {
+    this.service.deleteProduct(p.id).subscribe({
+      next: () => {
+        this.confirmId.set(null);
+        this.products.update((list) => list.filter((x) => x.id !== p.id));
+        this.total.update((n) => Math.max(n - 1, 0));
+        this.notice.set(`« ${p.name} » a été supprimé.`);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.confirmId.set(null);
+        this.problem.set(errorMessage(err));
+      },
+    });
+  }
+
   protected toggleActive(p: Product): void {
     this.notice.set('');
     this.problem.set('');

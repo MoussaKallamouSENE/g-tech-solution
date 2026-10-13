@@ -1,0 +1,72 @@
+<div class="px-4 py-8 lg:px-10">
+  <h1 class="font-display text-3xl font-bold tracking-tight">Catégories et livraison</h1>
+
+  @if (denied()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Accès réservé aux administrateurs.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark">Se connecter</a>
+    </div>
+  } @else if (loading()) {
+    <p class="mt-8 text-ink/60">Chargement...</p>
+  } @else {
+    @if (notice()) {
+      <p role="status" class="mt-6 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm">{{ notice() }}</p>
+    }
+    @if (problem()) {
+      <p role="alert" class="mt-6 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ problem() }}</p>
+    }
+
+    <h2 class="mt-10 font-display text-xl font-bold">Catégories</h2>
+    <form #catForm (submit)="addCategory($event, catForm)" class="mt-4 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-12 sm:items-end">
+      <div class="sm:col-span-4">
+        <label for="cat-name" class="text-sm font-medium">Nouvelle catégorie</label>
+        <input id="cat-name" name="name" type="text" required placeholder="Ex. Écrans" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt" />
+      </div>
+      <div class="sm:col-span-6">
+        <label for="cat-desc" class="text-sm font-medium">Description (facultatif)</label>
+        <input id="cat-desc" name="description" type="text" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt" />
+      </div>
+      <button type="submit" class="rounded-full bg-cobalt px-5 py-2 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt sm:col-span-2">Ajouter</button>
+    </form>
+
+    <ul class="mt-4 divide-y divide-line rounded-2xl border border-line bg-white">
+      @for (c of categories(); track c.id) {
+        <li class="grid gap-3 p-4 sm:grid-cols-12 sm:items-center">
+          <input #cn type="text" [value]="c.name" aria-label="Nom de la catégorie" class="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt sm:col-span-3" />
+          <input #cd type="text" [value]="c.description ?? ''" placeholder="Description" aria-label="Description" class="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt sm:col-span-4" />
+          <label class="flex items-center gap-2 text-sm sm:col-span-2">
+            <input #ca type="checkbox" [checked]="c.is_active" class="h-4 w-4 accent-cobalt" /> Visible
+          </label>
+          <span class="text-xs text-ink/50 sm:col-span-1">{{ c.products_count }} produit(s)</span>
+          <button type="button" (click)="saveCategory(c, cn.value, cd.value, ca.checked)" class="rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt sm:col-span-2">Enregistrer</button>
+        </li>
+      }
+    </ul>
+
+    <h2 class="mt-12 font-display text-xl font-bold">Zones de livraison</h2>
+    <form #zoneForm (submit)="addZone($event, zoneForm)" class="mt-4 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-12 sm:items-end">
+      <div class="sm:col-span-6">
+        <label for="zone-name" class="text-sm font-medium">Nouvelle zone</label>
+        <input id="zone-name" name="name" type="text" required placeholder="Ex. Keur Massar, Malika" class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt" />
+      </div>
+      <div class="sm:col-span-4">
+        <label for="zone-fee" class="text-sm font-medium">Tarif (FCFA)</label>
+        <input id="zone-fee" name="fee" type="number" min="0" step="100" required class="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt" />
+      </div>
+      <button type="submit" class="rounded-full bg-cobalt px-5 py-2 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt sm:col-span-2">Ajouter</button>
+    </form>
+
+    <ul class="mt-4 divide-y divide-line rounded-2xl border border-line bg-white">
+      @for (z of zones(); track z.id) {
+        <li class="grid gap-3 p-4 sm:grid-cols-12 sm:items-center" [class.opacity-60]="!z.is_active">
+          <input #zn type="text" [value]="z.name" aria-label="Nom de la zone" class="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt sm:col-span-6" />
+          <input #zf type="number" min="0" step="100" [value]="z.fee" aria-label="Tarif en FCFA" class="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-cobalt sm:col-span-2" />
+          <label class="flex items-center gap-2 text-sm sm:col-span-2">
+            <input #za type="checkbox" [checked]="z.is_active" class="h-4 w-4 accent-cobalt" /> Active
+          </label>
+          <button type="button" (click)="saveZone(z, zn.value, zf.value, za.checked)" class="rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt sm:col-span-2">Enregistrer</button>
+        </li>
+      }
+    </ul>
+  }
+</div>

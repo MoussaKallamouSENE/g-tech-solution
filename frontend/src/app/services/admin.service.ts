@@ -105,6 +105,10 @@ export class AdminService {
     return this.http.delete<Product>(`${this.apiUrl}/products/${id}/image`);
   }
 
+  deleteProduct(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
+  }
+
   patchProduct(id: number, changes: { stock?: number; is_active?: boolean }): Observable<Product> {
     return this.http.patch<Product>(`${this.apiUrl}/products/${id}`, changes);
   }
