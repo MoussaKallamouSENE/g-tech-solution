@@ -16,6 +16,41 @@ class AdminOrderController extends Controller
 
     public function stats()
     {
+        $orders = Order::where('status', '!=', 'cancelled')
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay())
+            ->get(['total', 'created_at'])
+            ->groupBy(fn ($o) => $o->created_at->toDateString());
+
+        $salesByDay = collect(range(6, 0))->map(function ($i) use ($orders) {
+            $date = now()->subDays($i)->toDateString();
+            $day = $orders->get($date, collect());
+
+            return ['date' => $date, 'total' => (int) $day->sum('total'), 'count' => $day->count()];
+        })->values();
+
+        $topProducts = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('orders.status', '!=', 'cancelled')
+            ->groupBy('order_items.product_name')
+            ->orderByDesc('sold')
+            ->limit(5)
+            ->get([DB::raw('order_items.product_name as name'), DB::raw('SUM(order_items.quantity) as sold')]);
+
+        return $this->basicStats() + [
+            'sales_by_day' => $salesByDay,
+            'top_products' => $topProducts,
+            'repairs_new' => \App\Models\MaintenanceRequest::where('status', 'new')->count(),
+            'recent_orders' => Order::latest()->orderByDesc('id')->limit(5)
+                ->get(['id', 'number', 'customer_name', 'total', 'status', 'created_at']),
+            'low_stock_products' => Product::where('is_active', true)
+                ->whereColumn('stock', '<=', 'stock_alert_threshold')
+                ->orderBy('stock')->limit(5)
+                ->get(['id', 'name', 'stock', 'stock_alert_threshold']),
+        ];
+    }
+
+    private function basicStats()
+    {
         return [
             'orders_total' => Order::count(),
             'orders_pending' => Order::where('status', 'pending')->count(),

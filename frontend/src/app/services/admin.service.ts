@@ -5,6 +5,11 @@ import { Paginated, Product } from '../models/catalogue';
 import { Order, statusLabel } from './order.service';
 
 export interface AdminStats {
+  sales_by_day: { date: string; total: number; count: number }[];
+  top_products: { name: string; sold: number }[];
+  repairs_new: number;
+  recent_orders: { id: number; number: string; customer_name: string; total: number; status: string; created_at: string }[];
+  low_stock_products: { id: number; name: string; stock: number; stock_alert_threshold: number }[];
   orders_total: number;
   orders_pending: number;
   revenue: number;

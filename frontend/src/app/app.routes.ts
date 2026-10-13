@@ -9,6 +9,8 @@ import { Orders } from './pages/orders/orders';
 import { OrderDetail } from './pages/order-detail/order-detail';
 import { Services } from './pages/services/services';
 import { Admin } from './pages/admin/admin';
+import { AdminLayout } from './pages/admin-layout/admin-layout';
+import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
 import { AdminOrderPage } from './pages/admin-order/admin-order';
 import { AdminProducts } from './pages/admin-products/admin-products';
 import { AdminProductForm } from './pages/admin-product-form/admin-product-form';
@@ -24,11 +26,18 @@ export const routes: Routes = [
   { path: 'services', component: Services },
   { path: 'connexion', component: Login },
   { path: 'inscription', component: Register },
-  { path: 'admin', component: Admin },
-  { path: 'admin/commandes/:id', component: AdminOrderPage },
-  { path: 'admin/produits', component: AdminProducts },
-  { path: 'admin/produits/nouveau', component: AdminProductForm },
-  { path: 'admin/produits/:id/modifier', component: AdminProductForm },
-  { path: 'admin/maintenance', component: AdminMaintenance },
+  {
+    path: 'admin',
+    component: AdminLayout,
+    children: [
+      { path: '', component: AdminDashboard },
+      { path: 'commandes', component: Admin },
+      { path: 'commandes/:id', component: AdminOrderPage },
+      { path: 'produits', component: AdminProducts },
+      { path: 'produits/nouveau', component: AdminProductForm },
+      { path: 'produits/:id/modifier', component: AdminProductForm },
+      { path: 'maintenance', component: AdminMaintenance },
+    ],
+  },
   { path: '**', redirectTo: '' },
 ];
