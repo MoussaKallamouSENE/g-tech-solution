@@ -8,6 +8,7 @@ import { Checkout } from './pages/checkout/checkout';
 import { Orders } from './pages/orders/orders';
 import { OrderDetail } from './pages/order-detail/order-detail';
 import { Services } from './pages/services/services';
+import { Contact } from './pages/contact/contact';
 import { Admin } from './pages/admin/admin';
 import { AdminLayout } from './pages/admin-layout/admin-layout';
 import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'commandes', component: Orders },
   { path: 'commandes/:id', component: OrderDetail },
   { path: 'services', component: Services },
+  { path: 'contact', component: Contact },
   { path: 'connexion', component: Login },
   { path: 'inscription', component: Register },
   {

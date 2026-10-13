@@ -1,0 +1,51 @@
+<section class="bg-ink text-white">
+  <div class="mx-auto max-w-6xl px-4 py-14">
+    <h1 class="max-w-2xl font-display text-4xl font-bold leading-tight tracking-tight">Contactez-nous</h1>
+    <p class="mt-4 max-w-xl text-lg text-white/70">Une question sur un produit, une commande ou une réparation ? Écrivez-nous ou appelez-nous.</p>
+  </div>
+</section>
+
+<div class="mx-auto max-w-6xl px-4 py-12">
+  @if (hasContact()) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @if (shop.whatsapp) {
+        <div class="rounded-2xl border border-line bg-white p-6">
+          <h2 class="font-display text-lg font-semibold">WhatsApp</h2>
+          <p class="mt-1 text-sm text-ink/70">Notre moyen le plus rapide pour une question ou un devis.</p>
+          <a [href]="whatsappHref" target="_blank" rel="noopener" class="mt-4 inline-block rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Écrire sur WhatsApp</a>
+        </div>
+      }
+      @if (shop.phone) {
+        <div class="rounded-2xl border border-line bg-white p-6">
+          <h2 class="font-display text-lg font-semibold">Téléphone</h2>
+          <a [href]="phoneHref" class="mt-2 block font-display text-xl font-bold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-cobalt">{{ shop.phone }}</a>
+          @if (shop.hours) { <p class="mt-2 text-sm text-ink/70">{{ shop.hours }}</p> }
+        </div>
+      }
+      @if (shop.email) {
+        <div class="rounded-2xl border border-line bg-white p-6">
+          <h2 class="font-display text-lg font-semibold">E-mail</h2>
+          <a [href]="emailHref" class="mt-2 block break-all font-semibold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-cobalt">{{ shop.email }}</a>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="rounded-2xl border border-line bg-white p-8">
+      <h2 class="font-display text-lg font-semibold">Nos coordonnées arrivent bientôt</h2>
+      <p class="mt-2 text-ink/70">En attendant, vous pouvez nous écrire en décrivant votre besoin depuis la page Services : nous vous rappelons.</p>
+    </div>
+  }
+
+  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+    <div class="rounded-2xl border border-line bg-white p-6">
+      <h2 class="font-display text-lg font-semibold">Adresse</h2>
+      <p class="mt-2 text-ink/80">{{ shop.address }}</p>
+      @if (shop.hours && !shop.phone) { <p class="mt-2 text-sm text-ink/70">{{ shop.hours }}</p> }
+    </div>
+    <div class="rounded-2xl bg-ink p-6 text-white">
+      <h2 class="font-display text-lg font-semibold">Un appareil en panne ?</h2>
+      <p class="mt-2 text-sm text-white/70">Décrivez le problème, nous vous rappelons pour convenir de la suite.</p>
+      <a routerLink="/services" fragment="demande" class="mt-4 inline-block rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Demander une réparation</a>
+    </div>
+  </div>
+</div>
