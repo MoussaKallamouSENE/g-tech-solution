@@ -30,7 +30,7 @@
         </div>
         <p class="mt-4 text-sm text-[#5B6B82]">Ventes sur 7 jours</p>
         <p class="mt-1 font-display text-2xl font-bold">{{ formatPrice(weekTotal()) }}</p>
-        <p class="mt-1 text-xs text-[#5B6B82]">{{ weekCount() }} commande(s)</p>
+        <p class="mt-1 text-xs text-[#5B6B82]">{{ weekCount() }} commande(s) cette semaine</p>
       </div>
 
       <a routerLink="/admin/commandes" class="rounded-2xl border border-line bg-white p-5 hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
@@ -77,6 +77,9 @@
           <line x1="0" y1="180" x2="700" y2="180" stroke="#E1E6EF" stroke-width="2" />
           <line x1="0" y1="110" x2="700" y2="110" stroke="#EDF0F6" stroke-width="1" stroke-dasharray="4 6" />
           <line x1="0" y1="40" x2="700" y2="40" stroke="#EDF0F6" stroke-width="1" stroke-dasharray="4 6" />
+          @if (weekTotal() === 0) {
+            <text x="350" y="115" text-anchor="middle" font-size="16" fill="#5B6B82">Aucune vente sur les 7 derniers jours</text>
+          }
           @for (b of bars(); track b.key) {
             <g>
               <title>{{ b.day }} : {{ formatPrice(b.value) }} ({{ b.count }} commande(s))</title>
