@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, throwError } from 'rxjs';
+import { API_BASE_URL } from '../config/api';
 
 export interface DeliveryZone {
   id: number;
@@ -15,16 +16,24 @@ export interface OrderItem {
   unit_price: number;
   quantity: number;
   total: number;
+  product_specs_snapshot?: Record<string, string> | null;
+  warranty_conditions_snapshot?: string | null;
 }
 
 export interface Order {
   id: number;
   number: string;
+  invoice_number: string;
   status: string;
   email_status?: 'pending' | 'sending' | 'sent' | 'failed' | null;
   email_sent_at?: string | null;
-  whatsapp_status?: 'not_configured' | 'pending' | 'sending' | 'sent' | 'failed' | null;
+  email_attempts?: number;
+  email_error?: string | null;
+  whatsapp_consent?: boolean;
+  whatsapp_status?: 'not_configured' | 'skipped' | 'pending' | 'sending' | 'sent' | 'failed' | null;
   whatsapp_sent_at?: string | null;
+  whatsapp_attempts?: number;
+  whatsapp_error?: string | null;
   payment_method: string;
   customer_name: string;
   customer_phone: string;
@@ -44,6 +53,7 @@ export interface OrderPayload {
   delivery_zone_id: number;
   customer_name: string;
   customer_phone: string;
+  whatsapp_consent: boolean;
   customer_address: string;
   notes?: string | null;
 }
@@ -116,6 +126,9 @@ export function whatsappStatusLabel(status?: string | null): string {
   if (status === 'pending') {
     return 'WhatsApp en attente';
   }
+  if (status === 'skipped') {
+    return 'WhatsApp non souhaité par le client';
+  }
   return 'WhatsApp désactivé';
 }
 
@@ -143,7 +156,7 @@ export function formatDate(iso: string): string {
 @Injectable({ providedIn: 'root' })
 export class OrderService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost/api';
+  private readonly apiUrl = API_BASE_URL;
 
   getZones(): Observable<DeliveryZone[]> {
     return this.http.get<DeliveryZone[]>(`${this.apiUrl}/delivery-zones`);
@@ -153,15 +166,39 @@ export class OrderService {
     return this.http.post<Order>(`${this.apiUrl}/orders`, payload);
   }
 
-  downloadInvoice(id: number, number: string): Observable<void> {
-    return this.http.get(`${this.apiUrl}/orders/${id}/invoice`, { responseType: 'blob' }).pipe(
+  getInvoicePdf(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/orders/${id}/invoice`, { responseType: 'blob' });
+  }
+
+  downloadInvoice(id: number, invoiceNumber: string): Observable<void> {
+    return this.getInvoicePdf(id).pipe(
       map((blob) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `facture-${number}.pdf`;
+        link.download = `${invoiceNumber.toLowerCase()}.pdf`;
         link.click();
         URL.revokeObjectURL(url);
+      }),
+    );
+  }
+
+  openInvoice(id: number, invoiceNumber: string): Observable<void> {
+    const invoiceWindow = window.open('', '_blank');
+    if (!invoiceWindow) {
+      return throwError(() => new Error('Autorisez les fenêtres contextuelles pour consulter la facture.'));
+    }
+
+    return this.getInvoicePdf(id).pipe(
+      map((blob) => {
+        const url = URL.createObjectURL(blob);
+        invoiceWindow.document.title = `Facture ${invoiceNumber}`;
+        invoiceWindow.location.href = url;
+        window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      }),
+      catchError((error: unknown) => {
+        invoiceWindow.close();
+        return throwError(() => error);
       }),
     );
   }

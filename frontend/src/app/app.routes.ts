@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { adminGuard } from './guards/admin.guard';
+import { driverGuard } from './guards/driver.guard';
 
 export const routes: Routes = [
   { path: '', loadComponent: () => import('./pages/home/home').then((m) => m.Home) },
@@ -9,6 +10,7 @@ export const routes: Routes = [
   },
   { path: 'panier', loadComponent: () => import('./pages/cart/cart').then((m) => m.Cart) },
   { path: 'commande', loadComponent: () => import('./pages/checkout/checkout').then((m) => m.Checkout) },
+  { path: 'commande-confirmation', loadComponent: () => import('./pages/order-confirmation/order-confirmation').then((m) => m.OrderConfirmation) },
   { path: 'commandes', loadComponent: () => import('./pages/orders/orders').then((m) => m.Orders) },
   {
     path: 'commandes/:id',
@@ -16,8 +18,16 @@ export const routes: Routes = [
   },
   { path: 'services', loadComponent: () => import('./pages/services/services').then((m) => m.Services) },
   { path: 'contact', loadComponent: () => import('./pages/contact/contact').then((m) => m.Contact) },
+  { path: 'profil', loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile) },
+  { path: 'mot-de-passe-oublie', loadComponent: () => import('./pages/forgot-password/forgot-password').then((m) => m.ForgotPassword) },
+  { path: 'reset-password', loadComponent: () => import('./pages/reset-password/reset-password').then((m) => m.ResetPassword) },
   { path: 'connexion', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
   { path: 'inscription', loadComponent: () => import('./pages/register/register').then((m) => m.Register) },
+  {
+    path: 'livreur',
+    canActivate: [driverGuard],
+    loadComponent: () => import('./pages/driver-deliveries/driver-deliveries').then((m) => m.DriverDeliveriesPage),
+  },
   {
     path: 'admin',
     canActivate: [adminGuard],
@@ -55,6 +65,10 @@ export const routes: Routes = [
       {
         path: 'maintenance',
         loadComponent: () => import('./pages/admin-maintenance/admin-maintenance').then((m) => m.AdminMaintenance),
+      },
+      {
+        path: 'livraisons',
+        loadComponent: () => import('./pages/admin-deliveries/admin-deliveries').then((m) => m.AdminDeliveriesPage),
       },
       {
         path: 'boutique',

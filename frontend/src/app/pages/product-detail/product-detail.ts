@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CatalogueService } from '../../services/catalogue.service';
 import { CartService } from '../../services/cart.service';
+import { WishlistService } from '../../services/wishlist.service';
 import { Product } from '../../models/catalogue';
 
 @Component({
@@ -13,17 +14,20 @@ export class ProductDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly catalogue = inject(CatalogueService);
   private readonly cart = inject(CartService);
+  private readonly wishlist = inject(WishlistService);
 
   protected readonly product = signal<Product | null>(null);
   protected readonly loading = signal(true);
   protected readonly quantity = signal(1);
   protected readonly added = signal(false);
+  protected readonly addedToWishlist = signal(false);
 
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.catalogue.getProduct(id).subscribe({
       next: (product) => {
         this.product.set(product);
+        this.addedToWishlist.set(this.wishlist.isInWishlist(id));
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
@@ -45,6 +49,11 @@ export class ProductDetail {
   protected addToCart(product: Product): void {
     this.cart.add(product, this.quantity());
     this.added.set(true);
+  }
+
+  protected toggleWishlist(productId: number): void {
+    this.wishlist.toggle(productId);
+    this.addedToWishlist.set(this.wishlist.isInWishlist(productId));
   }
 
   protected formatPrice(price: number): string {

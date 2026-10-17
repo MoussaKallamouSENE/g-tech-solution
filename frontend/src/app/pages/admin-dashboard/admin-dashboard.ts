@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { API_BASE_URL } from '../../config/api';
 import { formatDate, formatPrice, statusLabel } from '../../services/order.service';
 
 interface Dashboard {
@@ -10,6 +11,8 @@ interface Dashboard {
   orders_total: number;
   orders_pending: number;
   repairs_new: number;
+  deliveries_in_delivery: number;
+  gps_active: number;
   low_stock: number;
   stock_units_available: number;
   purchases_month_total: number;
@@ -39,6 +42,7 @@ export class AdminDashboard {
   protected readonly data = signal<Dashboard | null>(null);
   protected readonly denied = signal(false);
   protected readonly error = signal(false);
+  protected readonly errorMessage = signal('');
 
   protected readonly formatPrice = formatPrice;
   protected readonly formatDate = formatDate;
@@ -50,16 +54,13 @@ export class AdminDashboard {
   protected readonly weekCount = computed(() =>
     (this.data()?.sales_by_day ?? []).reduce((sum, d) => sum + d.count, 0),
   );
-
   protected readonly delta = computed<number | null>(() => {
     const previous = this.data()?.previous_week_total ?? 0;
     return previous > 0 ? Math.round(((this.weekTotal() - previous) / previous) * 100) : null;
   });
-
   protected readonly topMax = computed(() =>
     Math.max(...(this.data()?.top_products ?? []).map((p) => Number(p.sold)), 1),
   );
-
   protected readonly bars = computed(() => {
     const days = this.data()?.sales_by_day ?? [];
     const max = Math.max(...days.map((d) => d.total), 1);
@@ -85,16 +86,35 @@ export class AdminDashboard {
   });
 
   constructor() {
-    this.http.get<Dashboard>('http://localhost/api/admin/dashboard').subscribe({
+    this.loadDashboard();
+  }
+
+  protected loadDashboard(): void {
+    this.http.get<Dashboard>(`${API_BASE_URL}/admin/dashboard`).subscribe({
       next: (data) => this.data.set(data),
       error: (err: HttpErrorResponse) => {
         if (err.status === 401 || err.status === 403) {
           this.denied.set(true);
+          this.error.set(false);
+          this.errorMessage.set('');
+        } else if (err.status === 0) {
+          this.error.set(true);
+          this.errorMessage.set('Le serveur ne répond pas. Vérifiez que Docker est démarré.');
+        } else if (err.status >= 500) {
+          this.error.set(true);
+          this.errorMessage.set('Le serveur a rencontré une erreur. Réessayez dans un instant.');
         } else {
           this.error.set(true);
+          this.errorMessage.set('Une erreur est survenue. Réessayez.');
         }
       },
     });
+  }
+
+  protected retry(): void {
+    this.error.set(false);
+    this.errorMessage.set('');
+    this.loadDashboard();
   }
 
   protected statusStyle(status: string): string {

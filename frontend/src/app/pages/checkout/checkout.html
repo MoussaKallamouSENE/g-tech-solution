@@ -17,7 +17,7 @@
       </div>
     </div>
   } @else {
-    <form (submit)="submit($event, name.value, phone.value, address.value, notes.value)" class="mt-10 grid gap-8 lg:grid-cols-3">
+    <form (submit)="submit($event, name.value, phone.value, address.value, notes.value, whatsappConsent.checked)" class="mt-10 grid gap-8 lg:grid-cols-3">
       <div class="card space-y-5 p-6 lg:col-span-2">
         @if (error()) {
           <p role="alert" class="alert-error">{{ error() }}</p>
@@ -49,6 +49,10 @@
           <label for="notes" class="field-label">Remarques (facultatif)</label>
           <textarea #notes id="notes" rows="2" maxlength="1000"></textarea>
         </div>
+        <label class="flex items-start gap-3 text-sm text-muted">
+          <input #whatsappConsent type="checkbox" class="mt-1" />
+          <span>J’accepte de recevoir par WhatsApp les notifications relatives à cette commande. Ce choix est facultatif.</span>
+        </label>
         <div class="rounded-xl bg-mist p-4 text-sm">
           <p class="font-semibold">Paiement à la livraison</p>
           <p class="mt-1 text-muted">Vous réglez en espèces à la réception. D'autres moyens de paiement seront ajoutés plus tard.</p>

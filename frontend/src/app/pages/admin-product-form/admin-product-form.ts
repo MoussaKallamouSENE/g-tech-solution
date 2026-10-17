@@ -160,6 +160,7 @@ export class AdminProductForm {
       storage: optional('storage'),
       graphics_card: optional('graphics_card'),
       screen: optional('screen'),
+      warranty_conditions: optional('warranty_conditions'),
       state: text('state'),
       is_active: data.has('is_active'),
     };

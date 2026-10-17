@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/api';
 import { Category, Paginated, Product } from '../models/catalogue';
 
 export interface ProductFilters {
@@ -18,7 +19,7 @@ export interface ProductFilters {
 @Injectable({ providedIn: 'root' })
 export class CatalogueService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost/api';
+  private readonly apiUrl = API_BASE_URL;
 
   getProducts(filters: ProductFilters = {}): Observable<Paginated<Product>> {
     let params = new HttpParams();

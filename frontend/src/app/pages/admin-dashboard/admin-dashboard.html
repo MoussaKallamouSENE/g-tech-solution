@@ -1,7 +1,7 @@
 <div class="px-4 py-8 lg:px-10">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
-      <h1 class="font-display text-3xl font-bold tracking-tight">Tableau de bord</h1>
+      <h1 class="font-display text-3xl font-bold tracking-tight"><span aria-hidden="true">📊 </span>Tableau de bord</h1>
       <p class="mt-1 text-sm text-[#5B6B82]">Activité de la boutique sur les 7 derniers jours</p>
     </div>
     <a routerLink="/" class="inline-flex min-h-11 items-center rounded-full border border-[#D3DAE8] bg-white px-5 text-sm font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Voir la boutique</a>
@@ -14,7 +14,12 @@
       <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Se connecter</a>
     </div>
   } @else if (error()) {
-    <p class="mt-8 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">Impossible de charger les chiffres. Vérifiez que Docker est démarré, puis actualisez la page.</p>
+    <div class="mt-8 rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
+      <p>{{ errorMessage() }}</p>
+      <button type="button" (click)="retry()" class="mt-2 inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-white px-4 py-2 text-sm font-semibold hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-700">
+        Réessayer
+      </button>
+    </div>
   } @else if (data(); as s) {
     <div class="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <div class="rounded-2xl border border-line bg-white p-5">
@@ -42,6 +47,17 @@
         </div>
         <p class="mt-4 text-sm text-[#5B6B82]">Commandes en attente</p>
         <p class="mt-1 font-display text-2xl font-bold">{{ s.orders_pending }} <span class="text-sm font-medium text-[#5B6B82]">sur {{ s.orders_total }}</span></p>
+      </a>
+
+      <a routerLink="/admin/livraisons" class="rounded-2xl border border-line bg-white p-5 hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+        <div class="flex items-center justify-between">
+          <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#DDF0FB] text-[#0B5A8A]">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 12l3-3m0 0 3 3m-3-3-3 3"/></svg>
+          </span>
+          <span class="rounded-full bg-[#DDF0FB] px-2.5 py-1 text-xs font-semibold text-[#0B5A8A]">{{ s.gps_active }} en partage</span>
+        </div>
+        <p class="mt-4 text-sm text-[#5B6B82]">Livraisons en cours</p>
+        <p class="mt-1 font-display text-2xl font-bold">{{ s.deliveries_in_delivery }}</p>
       </a>
 
       <a routerLink="/admin/maintenance" class="rounded-2xl border border-line bg-white p-5 hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">

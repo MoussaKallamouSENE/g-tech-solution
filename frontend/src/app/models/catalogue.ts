@@ -24,6 +24,7 @@ export interface Product {
   storage: string | null;
   graphics_card: string | null;
   screen: string | null;
+  warranty_conditions?: string | null;
   state: string;
   image: string | null;
   is_active: boolean;

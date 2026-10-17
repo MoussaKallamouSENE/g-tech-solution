@@ -30,10 +30,11 @@ export class Checkout {
   }
 
   protected selectZone(value: string): void {
-    this.zoneId.set(value ? Number(value) : null);
+    const num = Number(value);
+    this.zoneId.set(value !== '' && Number.isFinite(num) ? num : null);
   }
 
-  protected submit(event: Event, name: string, phone: string, address: string, notes: string): void {
+  protected submit(event: Event, name: string, phone: string, address: string, notes: string, whatsappConsent: boolean): void {
     event.preventDefault();
     this.error.set('');
 
@@ -78,6 +79,7 @@ export class Checkout {
         delivery_zone_id: zoneId,
         customer_name: customerName,
         customer_phone: customerPhone,
+        whatsapp_consent: whatsappConsent,
         customer_address: customerAddress,
         notes: customerNotes || null,
       })

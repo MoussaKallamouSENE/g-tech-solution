@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/api';
 import { Paginated } from '../models/catalogue';
 
 export interface MaintenanceRequest {
@@ -75,7 +76,7 @@ export function maintenanceStatusClass(value: string): string {
 @Injectable({ providedIn: 'root' })
 export class MaintenanceService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost/api';
+  private readonly apiUrl = API_BASE_URL;
 
   create(payload: MaintenancePayload): Observable<{ number: string }> {
     return this.http.post<{ number: string }>(`${this.apiUrl}/maintenance-requests`, payload);

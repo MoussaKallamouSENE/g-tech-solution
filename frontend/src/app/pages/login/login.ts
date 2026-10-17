@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService, errorMessage } from '../../services/auth.service';
+import { AuthBackgroundComponent } from '../../components/auth-background/auth-background';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink],
+  imports: [RouterLink, AuthBackgroundComponent],
   templateUrl: './login.html',
 })
 export class Login {
@@ -28,13 +29,23 @@ export class Login {
     this.loading.set(true);
     this.auth.login({ email: email.trim(), password }).subscribe({
       next: () => {
-        const redirect = this.route.snapshot.queryParamMap.get('redirect') ?? '/';
-        this.router.navigateByUrl(redirect);
+        const user = this.auth.user();
+        const redirect = this.route.snapshot.queryParamMap.get('redirect');
+        const defaultRoute = user?.role === 'admin' ? '/admin' : user?.role === 'driver' ? '/livreur' : '/';
+        this.router.navigateByUrl(this.isAllowedRedirect(user?.role, redirect) ? redirect! : defaultRoute);
       },
       error: (err: HttpErrorResponse) => {
         this.error.set(errorMessage(err));
         this.loading.set(false);
       },
     });
+  }
+
+  private isAllowedRedirect(role: string | undefined, redirect: string | null): redirect is string {
+    if (!redirect?.startsWith('/') || redirect.startsWith('//')) return false;
+
+    if (role === 'admin') return redirect === '/admin' || redirect.startsWith('/admin/');
+    if (role === 'driver') return redirect === '/livreur' || redirect.startsWith('/livreur/');
+    return !/^\/(admin|livreur)(\/|$|[?#])/.test(redirect);
   }
 }

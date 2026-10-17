@@ -8,31 +8,35 @@
 
       <nav aria-label="Administration" class="flex flex-row flex-wrap gap-1 lg:flex-col">
         <a routerLink="/admin" routerLinkActive="bg-cobalt text-white!" [routerLinkActiveOptions]="{ exact: true }" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">📊</span>
           Tableau de bord
         </a>
         <a routerLink="/admin/commandes" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l1 13H5z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">📦</span>
           Commandes
         </a>
         <a routerLink="/admin/produits" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">📦</span>
           Produits
         </a>
         <a routerLink="/admin/fournisseurs" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v13H3z"/><path d="M7 7V4h10v3M7 12h10M7 16h6"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">🏭</span>
           Fournisseurs et achats
         </a>
         <a routerLink="/admin/clients" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">👥</span>
           Clients
         </a>
+        <a routerLink="/admin/livraisons" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">🚚</span>
+          Livraisons GPS
+        </a>
         <a routerLink="/admin/maintenance" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 0-5 5L4 17l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2-.5-.5-2z"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">🔧</span>
           Réparations
         </a>
         <a routerLink="/admin/boutique" routerLinkActive="bg-cobalt text-white!" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white">
-          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">🏷️</span>
           Catégories et livraison
         </a>
         <a routerLink="/" class="flex items-center gap-3 rounded-[10px] px-3.5 py-3 text-sm font-medium text-[#AEB9CC] hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-white lg:hidden">Voir la boutique</a>

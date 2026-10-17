@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, catchError, finalize, of, tap, throwError } from 'rxjs';
+import { API_BASE_URL } from '../config/api';
 
 export interface User {
   id: number;
@@ -45,7 +46,7 @@ export function errorMessage(err: HttpErrorResponse): string {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost/api';
+  private readonly apiUrl = API_BASE_URL;
 
   readonly user = signal<User | null>(null);
   readonly isLoggedIn = computed(() => this.user() !== null);
@@ -106,5 +107,26 @@ export class AuthService {
     }
     this.user.set(null);
     this.sessionLoadError.set(null);
+  }
+
+  updateProfile(data: { name: string; email: string; phone: string | null }): Observable<User> {
+    return this.http.put<User>(`${this.apiUrl}/me`, data).pipe(tap((user) => this.user.set(user)));
+  }
+
+  updatePassword(data: { current_password: string; password: string; password_confirmation: string }): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.apiUrl}/me/password`, data);
+  }
+
+  sendPasswordResetLink(data: { email: string }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/password/email`, data);
+  }
+
+  resetPassword(data: {
+    email: string;
+    token: string;
+    password: string;
+    password_confirmation: string;
+  }): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/password/reset`, data);
   }
 }

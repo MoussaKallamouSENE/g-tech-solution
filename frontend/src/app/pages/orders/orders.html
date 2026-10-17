@@ -1,5 +1,5 @@
 <div class="page-wrap py-10 md:py-14">
-  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cobalt">Compte</p>
+  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cobalt">Commandes</p>
   <h1 class="mt-1 font-display text-3xl font-extrabold tracking-tight md:text-4xl">Mes commandes</h1>
 
   <div class="mt-6 grid gap-4 rounded-[1.25rem] border border-line bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr]">
@@ -52,8 +52,11 @@
               <p class="font-display font-bold">{{ o.number }}</p>
               <p class="text-sm text-muted">{{ formatDate(o.created_at) }} · {{ o.items_count ?? 0 }} article(s)</p>
             </div>
-            <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+            <span class="rounded-full px-3 py-1 text-xs font-semibold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
             <p class="font-display text-lg font-extrabold">{{ formatPrice(o.total) }}</p>
+            @if (o.status === 'pending' || o.status === 'confirmed' || o.status === 'preparing' || o.status === 'out_for_delivery') {
+              <button type="button" (click)="cancelOrder(o.id)" class="mt-4 rounded-full border border-red-200 px-5 py-2 text-sm font-semibold text-red-700 disabled:opacity-50">Annuler</button>
+            }
           </a>
         </li>
       }

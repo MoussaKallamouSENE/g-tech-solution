@@ -120,6 +120,12 @@
         </div>
       </fieldset>
 
+      <div>
+        <label for="warranty_conditions" class="text-sm font-medium">Conditions commerciales spécifiques de garantie</label>
+        <textarea id="warranty_conditions" name="warranty_conditions" rows="4" maxlength="5000" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt">{{ product()?.warranty_conditions ?? '' }}</textarea>
+        <p class="mt-1 text-xs text-ink/50">Ces conditions seront copiées sur chaque commande passée pour conserver la garantie applicable à la vente. Les droits légaux du client restent préservés.</p>
+      </div>
+
       <label class="flex items-center gap-2 text-sm">
         <input type="checkbox" name="is_active" [checked]="product()?.is_active ?? true" class="h-4 w-4 accent-cobalt" />
         Visible sur le site

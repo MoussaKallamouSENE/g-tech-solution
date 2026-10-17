@@ -4,10 +4,11 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter, map, startWith } from 'rxjs';
 import { CartService } from './services/cart.service';
 import { AuthService } from './services/auth.service';
+import { ToastComponent } from './components/toast/toast';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, ToastComponent],
   templateUrl: './app.html',
 })
 export class App {
@@ -25,6 +26,15 @@ export class App {
         return this.router.url.startsWith('/admin');
       }),
       startWith(this.router.url.startsWith('/admin')),
+    ),
+    { initialValue: false },
+  );
+
+  protected readonly isDriver = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this.router.url.startsWith('/livreur')),
+      startWith(this.router.url.startsWith('/livreur')),
     ),
     { initialValue: false },
   );

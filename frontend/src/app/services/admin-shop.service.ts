@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/api';
 
 export interface AdminCategory {
   id: number;
@@ -33,7 +34,7 @@ export interface ZonePayload {
 @Injectable({ providedIn: 'root' })
 export class AdminShopService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost/api/admin';
+  private readonly apiUrl = `${API_BASE_URL}/admin`;
 
   getCategories(): Observable<AdminCategory[]> {
     return this.http.get<AdminCategory[]>(`${this.apiUrl}/categories`);

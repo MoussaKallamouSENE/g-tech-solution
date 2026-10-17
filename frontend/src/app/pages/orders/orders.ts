@@ -1,6 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { API_BASE_URL } from '../../config/api';
 import { Order, OrderService, formatDate, formatPrice, statusClass, statusLabel } from '../../services/order.service';
 
 @Component({
@@ -12,6 +14,7 @@ export class Orders {
   private readonly service = inject(OrderService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
 
   protected readonly list = signal<Order[]>([]);
   protected readonly loading = signal(true);
@@ -23,6 +26,8 @@ export class Orders {
   protected readonly formatDate = formatDate;
   protected readonly statusLabel = statusLabel;
   protected readonly statusClass = statusClass;
+  protected readonly apiUrl = API_BASE_URL;
+  protected readonly message = signal('');
 
   protected readonly visibleList = computed(() => {
     const list = this.list();
@@ -69,6 +74,22 @@ export class Orders {
 
   protected setSort(value: string): void {
     this.sort.set(value);
+  }
+
+  protected cancelOrder(orderId: number): void {
+    if (!confirm('Êtes-vous sûr de vouloir annuler cette commande ?')) {
+      return;
+    }
+    this.http.patch(`${this.apiUrl}/orders/${orderId}/cancel`, {}).subscribe({
+      next: () => {
+        this.load();
+        this.message.set('Commande annulée.');
+        setTimeout(() => this.message.set(''), 3000);
+      },
+      error: () => {
+        this.error.set(true);
+      },
+    });
   }
 
   private load(): void {

@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/api';
 import { Paginated, Product } from '../models/catalogue';
 import { Order, statusLabel } from './order.service';
 
@@ -44,6 +45,7 @@ export interface ProductPayload {
   storage: string | null;
   graphics_card: string | null;
   screen: string | null;
+  warranty_conditions: string | null;
   state: string;
   is_active: boolean;
 }
@@ -117,7 +119,7 @@ export const STATUS_TRANSITIONS: Record<string, string[]> = {
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost/api/admin';
+  private readonly apiUrl = `${API_BASE_URL}/admin`;
 
   getStats(): Observable<AdminStats> {
     return this.http.get<AdminStats>(`${this.apiUrl}/stats`);
@@ -149,6 +151,10 @@ export class AdminService {
 
   updateStatus(id: number, status: string): Observable<AdminOrder> {
     return this.http.patch<AdminOrder>(`${this.apiUrl}/orders/${id}/status`, { status });
+  }
+
+  retryNotification(id: number, channel: 'email' | 'whatsapp'): Observable<AdminOrder> {
+    return this.http.post<AdminOrder>(`${this.apiUrl}/orders/${id}/notifications/retry`, { channel });
   }
 
   getProducts(filters: { search?: string; low_stock?: boolean; page?: number }): Observable<Paginated<Product>> {

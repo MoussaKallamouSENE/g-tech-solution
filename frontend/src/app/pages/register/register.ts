@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService, errorMessage } from '../../services/auth.service';
+import { AuthBackgroundComponent } from '../../components/auth-background/auth-background';
 
 @Component({
   selector: 'app-register',
-  imports: [RouterLink],
+  imports: [RouterLink, AuthBackgroundComponent],
   templateUrl: './register.html',
 })
 export class Register {

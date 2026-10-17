@@ -20,6 +20,7 @@ export class AdminOrderPage {
   protected readonly denied = signal(false);
   protected readonly loadError = signal('');
   protected readonly saving = signal(false);
+  protected readonly retrying = signal<'email' | 'whatsapp' | null>(null);
   protected readonly message = signal('');
   protected readonly error = signal('');
 
@@ -42,10 +43,22 @@ export class AdminOrderPage {
   protected downloadInvoice(o: AdminOrder): void {
     this.invoiceError.set('');
     this.invoiceBusy.set(true);
-    this.orders.downloadInvoice(o.id, o.number).subscribe({
+    this.orders.downloadInvoice(o.id, o.invoice_number).subscribe({
       next: () => this.invoiceBusy.set(false),
       error: () => {
         this.invoiceError.set('Impossible de télécharger la facture. Réessayez.');
+        this.invoiceBusy.set(false);
+      },
+    });
+  }
+
+  protected viewInvoice(o: AdminOrder): void {
+    this.invoiceError.set('');
+    this.invoiceBusy.set(true);
+    this.orders.openInvoice(o.id, o.invoice_number).subscribe({
+      next: () => this.invoiceBusy.set(false),
+      error: (error: unknown) => {
+        this.invoiceError.set(error instanceof Error ? error.message : 'Impossible d’ouvrir la facture. Réessayez.');
         this.invoiceBusy.set(false);
       },
     });
@@ -114,6 +127,27 @@ export class AdminOrderPage {
       error: (err: HttpErrorResponse) => {
         this.error.set(errorMessage(err));
         this.saving.set(false);
+      },
+    });
+  }
+
+  protected retryNotification(channel: 'email' | 'whatsapp'): void {
+    const current = this.order();
+    if (!current || this.retrying()) return;
+
+    this.error.set('');
+    this.message.set('');
+    this.retrying.set(channel);
+    this.service.retryNotification(current.id, channel).subscribe({
+      next: (updated) => {
+        this.order.set({ ...current, ...updated });
+        this.message.set('La notification a été remise en file pour une nouvelle tentative.');
+        this.retrying.set(null);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.error.set(errorMessage(err));
+        this.retrying.set(null);
+        this.loadOrder();
       },
     });
   }

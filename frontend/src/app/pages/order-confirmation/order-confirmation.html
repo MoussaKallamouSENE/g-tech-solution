@@ -1,0 +1,38 @@
+<div class="page-wrap py-10 md:py-14 max-w-md mx-auto">
+  <a routerLink="/commandes" class="text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">&larr; Retour aux commandes</a>
+
+  <div class="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
+    <div class="flex items-center justify-center mb-6">
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-mint/20 text-mint">
+        <svg class="h-8 w-8 text-mint" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      </div>
+    </div>
+
+    <h1 class="mt-6 font-display text-3xl font-bold tracking-tight">Commande confirmée !</h1>
+    <p class="mt-2 text-sm text-ink/60">Merci pour votre achat. Votre commande a été enregistrée avec succès.</p>
+
+    <div class="mt-8 grid gap-4">
+      <div class="flex items-center justify-between p-4 rounded-xl border border-line bg-mist">
+        <span class="text-sm text-ink/60">Numéro de commande</span>
+        <span class="font-mono text-sm font-bold text-cobalt">{{ orderNumber() }}</span>
+      </div>
+      <div class="flex items-center justify-between p-4 rounded-xl border border-line bg-mist">
+        <span class="text-sm text-ink/60">Date de commande</span>
+        <span class="font-mono text-sm font-bold">{{ orderDate() }}</span>
+      </div>
+      <div class="flex items-center justify-between p-4 rounded-xl border border-line bg-mist">
+        <span class="text-sm text-ink/60">Montant total</span>
+        <span class="font-mono text-sm font-bold text-cobalt">{{ formatPrice(orderTotal()) }}</span>
+      </div>
+    </div>
+
+    <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
+      <a routerLink="/" class="rounded-full bg-cobalt px-6 py-3 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+        Voir la boutique
+      </a>
+      <a routerLink="/commandes" class="rounded-full border border-line px-6 py-3 text-sm font-semibold text-ink hover:bg-mist focus-visible:outline-2 focus-visible:outline-cobalt">
+        Voir toutes mes commandes
+      </a>
+    </div>
+  </div>
+</div>

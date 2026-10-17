@@ -1,0 +1,110 @@
+<div class="page-wrap py-10 md:py-14 max-w-2xl mx-auto">
+  <a routerLink="/" class="text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">&larr; Retour à l’accueil</a>
+
+  <h1 class="mt-6 font-display text-3xl font-bold tracking-tight">Mon profil</h1>
+
+  @if (message()) {
+    <p role="status" class="mt-4 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm">{{ message() }}</p>
+  }
+  @if (error()) {
+    <p role="alert" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
+  }
+
+  <section class="mt-8 rounded-2xl border border-line bg-white p-6">
+    <h2 class="font-display text-lg font-bold">Informations personnelles</h2>
+
+    <form (submit)="saveProfile()" class="mt-5 grid gap-4 sm:grid-cols-2">
+      <div>
+        <label class="block text-sm font-medium mb-1">Nom complet</label>
+        <input
+          type="text"
+          formControlName="name"
+          placeholder="Votre nom"
+          class="w-full rounded-lg border border-line px-3 py-2 focus:border-cobalt focus:outline-none disabled:opacity-60"
+          [disabled]="saving()"
+        />
+        @if (profileForm.get('name')?.invalid && profileForm.get('name')?.touched) {
+          <p class="mt-1 text-xs text-red-600">Le nom est obligatoire.</p>
+        }
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1">Adresse e-mail</label>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="vous@example.com"
+          class="w-full rounded-lg border border-line px-3 py-2 focus:border-cobalt focus:outline-none disabled:opacity-60"
+          [disabled]="saving()"
+        />
+        @if (profileForm.get('email')?.invalid && profileForm.get('email')?.touched) {
+          <p class="mt-1 text-xs text-red-600">L’adresse e-mail est invalide.</p>
+        }
+      </div>
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1">Téléphone</label>
+        <input
+          type="tel"
+          formControlName="phone"
+          placeholder="+221 77 000 00 00"
+          class="w-full rounded-lg border border-line px-3 py-2 focus:border-cobalt focus:outline-none disabled:opacity-60"
+          [disabled]="saving()"
+        />
+      </div>
+      <button
+        type="submit"
+        [disabled]="saving() || profileForm.invalid"
+        class="mt-2 sm:mt-0 sm:col-span-2 rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50"
+      >
+        {{ saving() ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+      </button>
+    </form>
+  </section>
+
+  <section class="mt-8 rounded-2xl border border-line bg-white p-6">
+    <h2 class="font-display text-lg font-bold">Changer le mot de passe</h2>
+    <p class="mt-1 text-sm text-muted">Le nouveau mot de passe doit contenir au moins 8 caractères.</p>
+
+    <form (submit)="savePassword()" class="mt-5 grid gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="block text-sm font-medium mb-1">Mot de passe actuel</label>
+        <input
+          type="password"
+          formControlName="current_password"
+          placeholder="••••••••"
+          class="w-full rounded-lg border border-line px-3 py-2 focus:border-cobalt focus:outline-none disabled:opacity-60"
+          [disabled]="savingPassword()"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Nouveau mot de passe</label>
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="••••••••"
+          class="w-full rounded-lg border border-line px-3 py-2 focus:border-cobalt focus:outline-none disabled:opacity-60"
+          [disabled]="savingPassword()"
+        />
+        @if (passwordForm.get('password')?.invalid && passwordForm.get('password')?.touched) {
+          <p class="mt-1 text-xs text-red-600">Au moins 8 caractères.</p>
+        }
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Confirmer le nouveau mot de passe</label>
+        <input
+          type="password"
+          formControlName="password_confirmation"
+          placeholder="••••••••"
+          class="w-full rounded-lg border border-line px-3 py-2 focus:border-cobalt focus:outline-none disabled:opacity-60"
+          [disabled]="savingPassword()"
+        />
+      </div>
+      <button
+        type="submit"
+        [disabled]="savingPassword() || passwordForm.invalid"
+        class="mt-2 sm:mt-0 sm:col-span-2 rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50"
+      >
+        {{ savingPassword() ? 'Enregistrement...' : 'Changer le mot de passe' }}
+      </button>
+    </form>
+  </section>
+</div>
