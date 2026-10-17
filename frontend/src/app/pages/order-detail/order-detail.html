@@ -1,71 +1,98 @@
-<div class="mx-auto max-w-4xl px-4 py-10">
-  <a routerLink="/commandes" class="text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">&larr; Mes commandes</a>
+<div class="page-wrap py-10 md:py-14">
+  <a routerLink="/commandes" class="text-sm font-semibold text-muted hover:text-cobalt">&larr; Mes commandes</a>
 
   @if (loading()) {
-    <p class="mt-8 text-ink/60">Chargement...</p>
+    <div class="mt-8 h-40 rounded-[1.25rem] skel"></div>
   } @else if (order(); as o) {
     @if (isNew) {
-      <div role="status" class="mt-6 rounded-2xl border border-mint/30 bg-mint/10 p-5">
-        <p class="font-display font-semibold">Commande enregistrée, merci !</p>
-        <p class="mt-1 text-sm text-ink/70">Nous vous contacterons au {{ o.customer_phone }} pour confirmer la livraison.</p>
+      <div role="status" class="alert-ok mt-6">
+        <p class="font-display font-bold">Commande enregistrée, merci !</p>
+        <p class="mt-1 text-sm text-muted">Nous vous contacterons au {{ o.customer_phone }} pour confirmer la livraison.</p>
       </div>
     }
 
     <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="font-display text-3xl font-bold tracking-tight">Commande {{ o.number }}</h1>
-        <p class="text-ink/60">Passée le {{ formatDate(o.created_at) }}</p>
+        <h1 class="font-display text-3xl font-extrabold tracking-tight">Commande {{ o.number }}</h1>
+        <p class="text-muted">Passée le {{ formatDate(o.created_at) }}</p>
       </div>
       <div class="flex flex-wrap items-center gap-3">
-        <span class="rounded-full px-4 py-1.5 text-sm font-semibold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+        <span class="rounded-full px-4 py-1.5 text-sm font-bold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
         @if (o.status !== 'cancelled') {
-          <button type="button" (click)="downloadInvoice(o)" [disabled]="invoiceBusy()" class="rounded-full border border-line bg-white px-4 py-1.5 text-sm font-semibold hover:border-cobalt hover:text-cobalt disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-cobalt">{{ invoiceBusy() ? 'Préparation...' : 'Télécharger la facture (PDF)' }}</button>
+          <button type="button" (click)="downloadInvoice(o)" [disabled]="invoiceBusy()" class="btn btn-secondary py-2 disabled:opacity-50">{{ invoiceBusy() ? 'Préparation...' : 'Télécharger la facture (PDF)' }}</button>
         }
       </div>
       @if (invoiceError()) {
-        <p role="alert" class="w-full rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ invoiceError() }}</p>
+        <p role="alert" class="alert-error w-full">{{ invoiceError() }}</p>
       }
     </div>
 
-    <ul class="mt-6 divide-y divide-line rounded-2xl border border-line bg-white">
+    <ul class="card mt-6 divide-y divide-line">
       @for (item of o.items; track item.id) {
         <li class="flex items-center justify-between gap-4 px-5 py-4">
           <div>
-            <p class="font-medium">{{ item.product_name }}</p>
-            <p class="text-sm text-ink/60">{{ item.quantity }} × {{ formatPrice(item.unit_price) }}</p>
+            <p class="font-semibold">{{ item.product_name }}</p>
+            <p class="text-sm text-muted">{{ item.quantity }} × {{ formatPrice(item.unit_price) }}</p>
           </div>
-          <p class="font-display font-bold">{{ formatPrice(item.total) }}</p>
+          <p class="font-display font-extrabold">{{ formatPrice(item.total) }}</p>
         </li>
       }
     </ul>
 
     <div class="mt-6 grid gap-6 md:grid-cols-2">
-      <div class="rounded-2xl border border-line bg-white p-5 text-sm">
-        <h2 class="font-display text-base font-semibold">Livraison</h2>
-        <p class="mt-2 font-medium">{{ o.customer_name }}</p>
-        <p class="text-ink/70">{{ o.customer_phone }}</p>
-        <p class="mt-1 whitespace-pre-line text-ink/70">{{ o.customer_address }}</p>
-        @if (o.zone) { <p class="mt-1 text-ink/70">Zone : {{ o.zone.name }}</p> }
-        @if (o.notes) { <p class="mt-2 text-ink/70">Remarques : {{ o.notes }}</p> }
-        <p class="mt-3 text-ink/70">Paiement à la livraison</p>
+      <div class="card p-5 text-sm">
+        <h2 class="font-display text-base font-bold">Livraison</h2>
+        <p class="mt-2 font-semibold">{{ o.customer_name }}</p>
+        <p class="text-muted">{{ o.customer_phone }}</p>
+        <p class="mt-1 whitespace-pre-line text-muted">{{ o.customer_address }}</p>
+        @if (o.zone) { <p class="mt-1 text-muted">Zone : {{ o.zone.name }}</p> }
+        @if (o.notes) { <p class="mt-2 text-muted">Remarques : {{ o.notes }}</p> }
+        <p class="mt-3 text-muted">Paiement à la livraison</p>
       </div>
 
-      <div class="rounded-2xl border border-line bg-white p-5 text-sm">
-        <h2 class="font-display text-base font-semibold">Montant</h2>
+      <div class="card p-5 text-sm">
+        <h2 class="font-display text-base font-bold">Montant</h2>
         <dl class="mt-3 space-y-2">
-          <div class="flex justify-between"><dt class="text-ink/60">Sous-total</dt><dd class="font-medium">{{ formatPrice(o.subtotal) }}</dd></div>
-          <div class="flex justify-between"><dt class="text-ink/60">Livraison</dt><dd class="font-medium">{{ formatPrice(o.delivery_fee) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted">Sous-total</dt><dd class="font-semibold">{{ formatPrice(o.subtotal) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-muted">Livraison</dt><dd class="font-semibold">{{ formatPrice(o.delivery_fee) }}</dd></div>
         </dl>
         <div class="mt-3 flex items-end justify-between border-t border-line pt-3">
           <span class="font-semibold">Total</span>
-          <span class="font-display text-xl font-bold">{{ formatPrice(o.total) }}</span>
+          <span class="font-display text-xl font-extrabold">{{ formatPrice(o.total) }}</span>
         </div>
       </div>
     </div>
+
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <div class="card p-5 text-sm">
+        <h2 class="font-display text-base font-bold">Notifications</h2>
+        <div class="mt-3 space-y-3">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-muted">E-mail</span>
+            <span class="rounded-full px-2.5 py-1 text-xs font-bold" [class]="emailStatusClass(o.email_status ?? null)">{{ emailStatusLabel(o.email_status ?? null) }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-muted">WhatsApp</span>
+            <span class="rounded-full px-2.5 py-1 text-xs font-bold" [class]="whatsappStatusClass(o.whatsapp_status ?? null)">{{ whatsappStatusLabel(o.whatsapp_status ?? null) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-5 text-sm">
+        <h2 class="font-display text-base font-bold">Informations de paiement</h2>
+        <p class="mt-3 text-muted">Méthode : {{ o.payment_method === 'cash_on_delivery' ? 'Paiement à la livraison' : o.payment_method }}</p>
+        @if (o.email_sent_at) {
+          <p class="mt-2 text-muted">E-mail envoyé le {{ formatDate(o.email_sent_at) }}</p>
+        }
+        @if (o.whatsapp_sent_at) {
+          <p class="mt-2 text-muted">WhatsApp envoyé le {{ formatDate(o.whatsapp_sent_at) }}</p>
+        }
+      </div>
+    </div>
   } @else {
-    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
-      <h1 class="font-display text-2xl font-bold">Commande introuvable</h1>
-      <p class="mt-2 text-ink/70">Cette commande n'existe pas ou ne vous appartient pas.</p>
+    <div class="card mt-8 p-10">
+      <h1 class="font-display text-2xl font-extrabold">Commande introuvable</h1>
+      <p class="mt-2 text-muted">Cette commande n'existe pas ou ne vous appartient pas.</p>
     </div>
   }
 </div>

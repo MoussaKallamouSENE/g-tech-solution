@@ -1,63 +1,65 @@
-<section class="bg-ink text-white">
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="max-w-2xl font-display text-4xl font-bold leading-tight tracking-tight">Maintenance et dépannage informatique à Dakar</h1>
+<section class="relative overflow-hidden text-white hero-mesh">
+  <div class="pointer-events-none absolute inset-0 hero-grid"></div>
+  <div class="page-wrap relative py-16 md:py-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">Atelier</p>
+    <h1 class="mt-3 max-w-2xl font-display text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">Maintenance et dépannage à Dakar</h1>
     <p class="mt-4 max-w-xl text-lg text-white/70">Un problème avec votre ordinateur, votre imprimante ou votre réseau ? Décrivez-le, nous vous rappelons.</p>
   </div>
 </section>
 
-<div class="mx-auto grid max-w-6xl gap-10 px-4 py-12 lg:grid-cols-5">
+<div class="page-wrap grid gap-10 py-12 lg:grid-cols-5 lg:py-16">
   <div class="lg:col-span-2">
-    <h2 class="font-display text-xl font-bold">Nos prestations</h2>
-    <ul class="mt-5 divide-y divide-line rounded-2xl border border-line bg-white">
+    <h2 class="font-display text-2xl font-extrabold">Nos prestations</h2>
+    <ul class="card mt-5 divide-y divide-line">
       <li class="p-5">
-        <p class="font-display font-semibold">Diagnostic</p>
-        <p class="mt-1 text-sm text-ink/70">Nous identifions la cause de la panne avant toute réparation.</p>
+        <p class="font-display font-bold">Diagnostic</p>
+        <p class="mt-1 text-sm text-muted">Nous identifions la cause de la panne avant toute réparation.</p>
       </li>
       <li class="p-5">
-        <p class="font-display font-semibold">Réparation</p>
-        <p class="mt-1 text-sm text-ink/70">Remplacement d'écran, de disque, de batterie, nettoyage et mise à niveau.</p>
+        <p class="font-display font-bold">Réparation</p>
+        <p class="mt-1 text-sm text-muted">Remplacement d'écran, de disque, de batterie, nettoyage et mise à niveau.</p>
       </li>
       <li class="p-5">
-        <p class="font-display font-semibold">Installation et logiciels</p>
-        <p class="mt-1 text-sm text-ink/70">Windows, bureautique, antivirus, sauvegarde et récupération de données.</p>
+        <p class="font-display font-bold">Installation et logiciels</p>
+        <p class="mt-1 text-sm text-muted">Windows, bureautique, antivirus, sauvegarde et récupération de données.</p>
       </li>
       <li class="p-5">
-        <p class="font-display font-semibold">Réseau et Wi-Fi</p>
-        <p class="mt-1 text-sm text-ink/70">Installation et dépannage de votre connexion, au bureau comme à la maison.</p>
+        <p class="font-display font-bold">Réseau et Wi-Fi</p>
+        <p class="mt-1 text-sm text-muted">Installation et dépannage de votre connexion, au bureau comme à la maison.</p>
       </li>
     </ul>
   </div>
 
   <div class="lg:col-span-3">
-    <h2 id="demande" class="scroll-mt-24 font-display text-xl font-bold">Demander une réparation</h2>
+    <h2 id="demande" class="scroll-mt-28 font-display text-2xl font-extrabold">Demander une réparation</h2>
 
     @if (sentNumber()) {
-      <div role="status" class="mt-5 rounded-2xl border border-mint/30 bg-mint/10 p-5">
-        <p class="font-display font-semibold">Demande {{ sentNumber() }} enregistrée, merci !</p>
-        <p class="mt-1 text-sm text-ink/70">Nous vous rappelons rapidement pour convenir de la suite. Gardez ce numéro de demande.</p>
+      <div role="status" class="alert-ok mt-5">
+        <p class="font-display font-bold">Demande {{ sentNumber() }} enregistrée, merci !</p>
+        <p class="mt-1 text-sm text-muted">Nous vous rappelons rapidement. Gardez ce numéro de demande.</p>
       </div>
     }
 
-    <form #form (submit)="submit($event, form)" class="mt-5 space-y-5 rounded-2xl border border-line bg-white p-6">
+    <form #form (submit)="submit($event, form)" class="card mt-5 space-y-5 p-6 md:p-8">
       @if (error()) {
-        <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ error() }}</p>
+        <p role="alert" class="alert-error">{{ error() }}</p>
       }
       <div class="grid gap-5 sm:grid-cols-2">
         <div>
-          <label for="name" class="text-sm font-medium">Nom complet</label>
-          <input id="name" name="name" type="text" required [value]="auth.user()?.name ?? ''" autocomplete="name" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+          <label for="name" class="field-label">Nom complet</label>
+          <input id="name" name="name" type="text" required [value]="auth.user()?.name ?? ''" autocomplete="name" />
         </div>
         <div>
-          <label for="phone" class="text-sm font-medium">Téléphone</label>
-          <input id="phone" name="phone" type="tel" required [value]="auth.user()?.phone ?? ''" autocomplete="tel" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+          <label for="phone" class="field-label">Téléphone</label>
+          <input id="phone" name="phone" type="tel" required [value]="auth.user()?.phone ?? ''" autocomplete="tel" />
         </div>
         <div class="sm:col-span-2">
-          <label for="email" class="text-sm font-medium">Adresse e-mail (facultatif)</label>
-          <input id="email" name="email" type="email" [value]="auth.user()?.email ?? ''" autocomplete="email" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+          <label for="email" class="field-label">Adresse e-mail (facultatif)</label>
+          <input id="email" name="email" type="email" [value]="auth.user()?.email ?? ''" autocomplete="email" />
         </div>
         <div>
-          <label for="device_type" class="text-sm font-medium">Type d'appareil</label>
-          <select id="device_type" name="device_type" required class="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-cobalt">
+          <label for="device_type" class="field-label">Type d'appareil</label>
+          <select id="device_type" name="device_type" required>
             <option value="">Choisir</option>
             @for (d of devices; track d.value) {
               <option [value]="d.value">{{ d.label }}</option>
@@ -65,15 +67,15 @@
           </select>
         </div>
         <div>
-          <label for="brand" class="text-sm font-medium">Marque et modèle (facultatif)</label>
-          <input id="brand" name="brand" type="text" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+          <label for="brand" class="field-label">Marque et modèle (facultatif)</label>
+          <input id="brand" name="brand" type="text" />
         </div>
       </div>
       <div>
-        <label for="problem" class="text-sm font-medium">Décrivez le problème</label>
-        <textarea id="problem" name="problem" rows="5" required minlength="10" placeholder="Que se passe-t-il ? Depuis quand ? Un message d'erreur s'affiche-t-il ?" class="mt-1 w-full rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt"></textarea>
+        <label for="problem" class="field-label">Décrivez le problème</label>
+        <textarea id="problem" name="problem" rows="5" required minlength="10" placeholder="Que se passe-t-il ? Depuis quand ? Un message d'erreur s'affiche-t-il ?"></textarea>
       </div>
-      <button type="submit" [disabled]="loading()" class="rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">
+      <button type="submit" [disabled]="loading()" class="btn btn-primary disabled:opacity-50">
         {{ loading() ? 'Envoi...' : 'Envoyer ma demande' }}
       </button>
     </form>

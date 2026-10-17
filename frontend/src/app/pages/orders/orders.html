@@ -1,30 +1,59 @@
-<div class="mx-auto max-w-4xl px-4 py-10">
-  <h1 class="font-display text-3xl font-bold tracking-tight">Mes commandes</h1>
+<div class="page-wrap py-10 md:py-14">
+  <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cobalt">Compte</p>
+  <h1 class="mt-1 font-display text-3xl font-extrabold tracking-tight md:text-4xl">Mes commandes</h1>
+
+  <div class="mt-6 grid gap-4 rounded-[1.25rem] border border-line bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr]">
+    <label class="text-sm font-medium text-muted">
+      <span class="mb-2 block">Statut</span>
+      <select [value]="status()" (change)="setStatus($any($event.target).value)" class="w-full rounded-xl border border-line px-3 py-2.5">
+        <option value="all">Toutes</option>
+        <option value="pending">En attente</option>
+        <option value="confirmed">Confirmée</option>
+        <option value="preparing">En préparation</option>
+        <option value="out_for_delivery">En cours de livraison</option>
+        <option value="delivered">Livrée</option>
+        <option value="cancelled">Annulée</option>
+      </select>
+    </label>
+
+    <label class="text-sm font-medium text-muted">
+      <span class="mb-2 block">Tri</span>
+      <select [value]="sort()" (change)="setSort($any($event.target).value)" class="w-full rounded-xl border border-line px-3 py-2.5">
+        <option value="newest">Plus récents</option>
+        <option value="oldest">Plus anciens</option>
+        <option value="total_desc">Montant décroissant</option>
+        <option value="total_asc">Montant croissant</option>
+      </select>
+    </label>
+  </div>
 
   @if (loading()) {
-    <p class="mt-8 text-ink/60">Chargement...</p>
-  } @else if (error()) {
-    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
-      <p class="font-semibold">Impossible d'afficher vos commandes.</p>
-      <p class="mt-1 text-ink/70">Vous n'êtes peut-être pas connecté.</p>
-      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Se connecter</a>
+    <div class="mt-8 space-y-4">
+      <div class="h-24 rounded-[1.25rem] skel"></div>
+      <div class="h-24 rounded-[1.25rem] skel"></div>
     </div>
-  } @else if (list().length === 0) {
-    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
-      <p class="font-semibold">Vous n'avez pas encore passé de commande.</p>
-      <a routerLink="/" fragment="produits" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Voir les produits</a>
+  } @else if (error()) {
+    <div class="card mt-8 p-10 text-center">
+      <p class="font-display text-lg font-bold">Impossible d'afficher vos commandes</p>
+      <p class="mt-1 text-muted">Vous n'êtes peut-être pas connecté.</p>
+      <a routerLink="/connexion" class="btn btn-primary mt-6">Se connecter</a>
+    </div>
+  } @else if (visibleList().length === 0) {
+    <div class="card mt-8 p-10 text-center">
+      <p class="font-display text-lg font-bold">Aucune commande trouvée</p>
+      <a routerLink="/" fragment="produits" class="btn btn-primary mt-6">Voir la boutique</a>
     </div>
   } @else {
     <ul class="mt-8 space-y-4">
-      @for (o of list(); track o.id) {
+      @for (o of visibleList(); track o.id) {
         <li>
-          <a [routerLink]="['/commandes', o.id]" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-white p-5 hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+          <a [routerLink]="['/commandes', o.id]" class="card flex flex-wrap items-center justify-between gap-4 p-5 transition hover:border-cobalt">
             <div>
-              <p class="font-display font-semibold">{{ o.number }}</p>
-              <p class="text-sm text-ink/60">{{ formatDate(o.created_at) }} &ndash; {{ o.items_count }} article(s)</p>
+              <p class="font-display font-bold">{{ o.number }}</p>
+              <p class="text-sm text-muted">{{ formatDate(o.created_at) }} · {{ o.items_count ?? 0 }} article(s)</p>
             </div>
-            <span class="rounded-full px-3 py-1 text-xs font-semibold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
-            <p class="font-display text-lg font-bold">{{ formatPrice(o.total) }}</p>
+            <span class="rounded-full px-3 py-1 text-xs font-bold" [class]="statusClass(o.status)">{{ statusLabel(o.status) }}</span>
+            <p class="font-display text-lg font-extrabold">{{ formatPrice(o.total) }}</p>
           </a>
         </li>
       }

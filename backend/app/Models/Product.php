@@ -23,6 +23,7 @@ class Product extends Model
         'storage',
         'graphics_card',
         'screen',
+        'warranty_conditions',
         'state',
         'image',
         'is_active',

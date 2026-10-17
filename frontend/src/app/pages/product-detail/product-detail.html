@@ -1,81 +1,88 @@
-<div class="mx-auto max-w-6xl px-4 py-10">
-  <a routerLink="/" class="inline-flex items-center gap-2 rounded-lg text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">
+<div class="page-wrap py-10 md:py-14">
+  <a routerLink="/" class="inline-flex items-center gap-2 text-sm font-semibold text-muted hover:text-cobalt">
     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-    Retour aux produits
+    Retour à la boutique
   </a>
 
   @if (loading()) {
-    <p class="mt-8 text-ink/60">Chargement du produit...</p>
+    <div class="mt-8 grid gap-10 md:grid-cols-2">
+      <div class="aspect-square rounded-[1.25rem] skel"></div>
+      <div class="space-y-4 pt-4">
+        <div class="h-4 w-24 rounded skel"></div>
+        <div class="h-10 w-3/4 rounded skel"></div>
+        <div class="h-8 w-40 rounded skel"></div>
+      </div>
+    </div>
   } @else if (product(); as p) {
-    <div class="mt-6 grid gap-10 md:grid-cols-2">
-      <div class="relative flex aspect-square items-center justify-center rounded-2xl border border-line bg-white">
+    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div class="relative flex aspect-square items-center justify-center overflow-hidden rounded-[1.5rem] border border-line bg-white shadow-[var(--shadow-card)]">
         @if (p.image_url) {
-          <img [src]="p.image_url" [alt]="p.name" class="h-full w-full object-contain p-6" />
+          <img [src]="p.image_url" [alt]="p.name" class="h-full w-full object-contain p-8" />
         } @else {
-          <span class="font-display text-8xl font-bold uppercase text-ink/10">{{ p.brand?.slice(0, 2) }}</span>
+          <span class="font-display text-8xl font-extrabold uppercase text-ink/10">{{ p.brand?.slice(0, 2) }}</span>
         }
-        <span class="absolute left-4 top-4 rounded-full bg-mist px-3 py-1 text-xs font-semibold capitalize">{{ p.state }}</span>
+        <span class="absolute left-5 top-5 rounded-full bg-mist px-3 py-1 text-xs font-bold uppercase tracking-wide">{{ p.state }}</span>
       </div>
 
       <div>
-        <p class="text-sm text-cobalt">{{ p.category?.name }}</p>
-        <h1 class="mt-1 font-display text-3xl font-bold leading-tight tracking-tight">{{ p.name }}</h1>
-        <p class="mt-1 text-ink/60">{{ p.brand }} &ndash; Réf. {{ p.reference }}</p>
+        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt">{{ p.category?.name }}</p>
+        <h1 class="mt-2 font-display text-3xl font-extrabold leading-tight tracking-tight md:text-4xl">{{ p.name }}</h1>
+        <p class="mt-2 text-muted">{{ p.brand }} · Réf. {{ p.reference }}</p>
 
-        <div class="mt-6 flex items-end gap-4">
-          <p class="font-display text-3xl font-bold">{{ formatPrice(p.price) }}</p>
+        <div class="mt-7 flex items-end gap-4">
+          <p class="font-display text-4xl font-extrabold">{{ formatPrice(p.price) }}</p>
           @if (p.stock === 0) {
-            <span class="pb-1 text-sm font-medium text-red-600">Rupture de stock</span>
+            <span class="pb-1 text-sm font-semibold text-red-600">Rupture de stock</span>
           } @else if (p.stock <= p.stock_alert_threshold) {
-            <span class="pb-1 text-sm font-medium text-amber-600">Plus que {{ p.stock }} en stock</span>
+            <span class="pb-1 text-sm font-semibold text-amber-600">Plus que {{ p.stock }} en stock</span>
           } @else {
-            <span class="pb-1 text-sm font-medium text-mint">En stock</span>
+            <span class="pb-1 text-sm font-semibold text-mint">En stock</span>
           }
         </div>
 
         @if (p.stock > 0) {
-          <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div class="mt-7 flex flex-wrap items-center gap-3">
             <div class="flex items-center rounded-full border border-line bg-white">
-              <button type="button" (click)="decrease()" [disabled]="quantity() <= 1" aria-label="Diminuer la quantité" class="h-11 w-11 rounded-full text-lg hover:text-cobalt disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-cobalt">&ndash;</button>
-              <span class="w-8 text-center font-semibold" aria-live="polite">{{ quantity() }}</span>
-              <button type="button" (click)="increase(p)" [disabled]="quantity() >= p.stock" aria-label="Augmenter la quantité" class="h-11 w-11 rounded-full text-lg hover:text-cobalt disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-cobalt">+</button>
+              <button type="button" (click)="decrease()" [disabled]="quantity() <= 1" aria-label="Diminuer la quantité" class="h-12 w-12 rounded-full text-lg hover:text-cobalt disabled:opacity-30">&ndash;</button>
+              <span class="w-8 text-center font-bold" aria-live="polite">{{ quantity() }}</span>
+              <button type="button" (click)="increase(p)" [disabled]="quantity() >= p.stock" aria-label="Augmenter la quantité" class="h-12 w-12 rounded-full text-lg hover:text-cobalt disabled:opacity-30">+</button>
             </div>
-            <button type="button" (click)="addToCart(p)" class="rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Ajouter au panier</button>
+            <button type="button" (click)="addToCart(p)" class="btn btn-primary">Ajouter au panier</button>
           </div>
           @if (added()) {
-            <p class="mt-3 text-sm text-mint" role="status">Ajouté au panier. <a routerLink="/panier" class="font-semibold underline">Voir le panier</a></p>
+            <p class="mt-3 text-sm font-medium text-mint" role="status">Ajouté au panier. <a routerLink="/panier" class="font-bold underline">Voir le panier</a></p>
           }
         }
 
         @if (p.description) {
-          <p class="mt-6 max-w-prose leading-relaxed text-ink/80">{{ p.description }}</p>
+          <p class="mt-8 max-w-prose leading-relaxed text-ink/80">{{ p.description }}</p>
         }
 
-        <h2 class="mt-8 font-display text-lg font-semibold">Caractéristiques</h2>
-        <dl class="mt-3 divide-y divide-line rounded-2xl border border-line bg-white text-sm">
+        <h2 class="mt-10 font-display text-lg font-bold">Caractéristiques</h2>
+        <dl class="card mt-4 divide-y divide-line text-sm">
           @if (p.processor) {
-            <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-ink/50">Processeur</dt><dd class="font-medium">{{ p.processor }}</dd></div>
+            <div class="flex justify-between gap-4 px-5 py-3.5"><dt class="text-muted">Processeur</dt><dd class="font-semibold">{{ p.processor }}</dd></div>
           }
           @if (p.ram) {
-            <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-ink/50">Mémoire</dt><dd class="font-medium">{{ p.ram }}</dd></div>
+            <div class="flex justify-between gap-4 px-5 py-3.5"><dt class="text-muted">Mémoire</dt><dd class="font-semibold">{{ p.ram }}</dd></div>
           }
           @if (p.storage) {
-            <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-ink/50">Stockage</dt><dd class="font-medium">{{ p.storage }}</dd></div>
+            <div class="flex justify-between gap-4 px-5 py-3.5"><dt class="text-muted">Stockage</dt><dd class="font-semibold">{{ p.storage }}</dd></div>
           }
           @if (p.graphics_card) {
-            <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-ink/50">Carte graphique</dt><dd class="font-medium">{{ p.graphics_card }}</dd></div>
+            <div class="flex justify-between gap-4 px-5 py-3.5"><dt class="text-muted">Carte graphique</dt><dd class="font-semibold">{{ p.graphics_card }}</dd></div>
           }
           @if (p.screen) {
-            <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-ink/50">Écran</dt><dd class="font-medium">{{ p.screen }}</dd></div>
+            <div class="flex justify-between gap-4 px-5 py-3.5"><dt class="text-muted">Écran</dt><dd class="font-semibold">{{ p.screen }}</dd></div>
           }
-          <div class="flex justify-between gap-4 px-4 py-3"><dt class="text-ink/50">État</dt><dd class="font-medium capitalize">{{ p.state }}</dd></div>
+          <div class="flex justify-between gap-4 px-5 py-3.5"><dt class="text-muted">État</dt><dd class="font-semibold capitalize">{{ p.state }}</dd></div>
         </dl>
       </div>
     </div>
   } @else {
-    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
-      <h1 class="font-display text-2xl font-bold">Produit introuvable</h1>
-      <p class="mt-2 text-ink/70">Ce produit n'existe pas ou n'est plus disponible. Retournez à la liste pour voir les produits en vente.</p>
+    <div class="card mt-8 p-10">
+      <h1 class="font-display text-2xl font-extrabold">Produit introuvable</h1>
+      <p class="mt-2 text-muted">Ce produit n'existe pas ou n'est plus disponible.</p>
     </div>
   }
 </div>

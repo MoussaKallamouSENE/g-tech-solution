@@ -8,9 +8,11 @@ export interface CartItem {
   price: number;
   stock: number;
   quantity: number;
+  image_url?: string | null;
 }
 
 const STORAGE_KEY = 'gtech_cart';
+const MAX_ORDER_QUANTITY = 10;
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
@@ -23,16 +25,32 @@ export class CartService {
   );
 
   add(product: Product, quantity = 1): void {
-    if (product.stock <= 0) {
+    if (product.stock <= 0 || !Number.isFinite(quantity)) {
       return;
     }
+    const addedQuantity = Math.trunc(quantity);
+    if (addedQuantity < 1) {
+      return;
+    }
+
     const items = [...this._items()];
     const existing = items.find((item) => item.id === product.id);
+    const maxQuantity = Math.min(product.stock, MAX_ORDER_QUANTITY);
 
     if (existing) {
-      existing.quantity = Math.min(existing.quantity + quantity, product.stock);
-      existing.stock = product.stock;
-      existing.price = product.price;
+      this.commit(
+        items.map((item) =>
+          item.id === product.id
+            ? {
+                ...item,
+                quantity: Math.min(item.quantity + addedQuantity, maxQuantity),
+                stock: product.stock,
+                price: product.price,
+                image_url: product.image_url ?? item.image_url,
+              }
+            : item,
+        ),
+      );
     } else {
       items.push({
         id: product.id,
@@ -40,20 +58,37 @@ export class CartService {
         brand: product.brand,
         price: product.price,
         stock: product.stock,
-        quantity: Math.min(quantity, product.stock),
+        quantity: Math.min(addedQuantity, maxQuantity),
+        image_url: product.image_url,
       });
+      this.commit(items);
     }
-    this.commit(items);
   }
 
   setQuantity(id: number, quantity: number): void {
-    if (quantity < 1) {
+    if (!Number.isFinite(quantity)) {
+      return;
+    }
+    const normalizedQuantity = Math.trunc(quantity);
+    if (normalizedQuantity < 1) {
       this.remove(id);
       return;
     }
+
+    const target = this._items().find((item) => item.id === id);
+    if (!target) {
+      return;
+    }
+
+    const maxQuantity = Math.min(target.stock, MAX_ORDER_QUANTITY);
+    if (maxQuantity < 1) {
+      this.remove(id);
+      return;
+    }
+
     this.commit(
       this._items().map((item) =>
-        item.id === id ? { ...item, quantity: Math.min(quantity, item.stock) } : item,
+        item.id === id ? { ...item, quantity: Math.min(normalizedQuantity, maxQuantity) } : item,
       ),
     );
   }
@@ -68,6 +103,10 @@ export class CartService {
 
   quantityOf(id: number): number {
     return this._items().find((item) => item.id === id)?.quantity ?? 0;
+  }
+
+  maxQuantity(item: CartItem): number {
+    return Math.min(item.stock, MAX_ORDER_QUANTITY);
   }
 
   private commit(items: CartItem[]): void {
@@ -86,15 +125,21 @@ export class CartService {
       if (!Array.isArray(data)) {
         return [];
       }
-      return data.filter(
-        (item) =>
-          item &&
-          typeof item.id === 'number' &&
-          typeof item.price === 'number' &&
-          typeof item.stock === 'number' &&
-          typeof item.quantity === 'number' &&
-          item.quantity > 0,
-      );
+      return data
+        .filter(
+          (item) =>
+            item &&
+            typeof item.id === 'number' &&
+            typeof item.price === 'number' &&
+            Number.isInteger(item.stock) &&
+            item.stock > 0 &&
+            Number.isInteger(item.quantity) &&
+            item.quantity > 0,
+        )
+        .map((item) => ({
+          ...item,
+          quantity: Math.min(item.quantity, item.stock, MAX_ORDER_QUANTITY),
+        }));
     } catch {
       return [];
     }

@@ -1,51 +1,54 @@
-<section class="bg-ink text-white">
-  <div class="mx-auto max-w-6xl px-4 py-14">
-    <h1 class="max-w-2xl font-display text-4xl font-bold leading-tight tracking-tight">Contactez-nous</h1>
+<section class="relative overflow-hidden text-white hero-mesh">
+  <div class="pointer-events-none absolute inset-0 hero-grid"></div>
+  <div class="page-wrap relative py-16 md:py-20">
+    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">Contact</p>
+    <h1 class="mt-3 max-w-2xl font-display text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">Parlons de votre besoin</h1>
     <p class="mt-4 max-w-xl text-lg text-white/70">Une question sur un produit, une commande ou une réparation ? Écrivez-nous ou appelez-nous.</p>
   </div>
 </section>
 
-<div class="mx-auto max-w-6xl px-4 py-12">
+<div class="page-wrap py-12 md:py-16">
   @if (hasContact()) {
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       @if (shop.whatsapp) {
-        <div class="rounded-2xl border border-line bg-white p-6">
-          <h2 class="font-display text-lg font-semibold">WhatsApp</h2>
-          <p class="mt-1 text-sm text-ink/70">Notre moyen le plus rapide pour une question ou un devis.</p>
-          <a [href]="whatsappHref" target="_blank" rel="noopener" class="mt-4 inline-block rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Écrire sur WhatsApp</a>
+        <div class="card p-7">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt">WhatsApp</p>
+          <h2 class="mt-2 font-display text-lg font-bold">Le plus rapide</h2>
+          <p class="mt-1 text-sm text-muted">Pour une question, un devis ou le suivi d'une commande.</p>
+          <a [href]="whatsappHref" target="_blank" rel="noopener" class="btn btn-primary mt-5">Écrire sur WhatsApp</a>
         </div>
       }
       @if (shop.phone) {
-        <div class="rounded-2xl border border-line bg-white p-6">
-          <h2 class="font-display text-lg font-semibold">Téléphone</h2>
-          <a [href]="phoneHref" class="mt-2 block font-display text-xl font-bold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-cobalt">{{ shop.phone }}</a>
-          @if (shop.hours) { <p class="mt-2 text-sm text-ink/70">{{ shop.hours }}</p> }
+        <div class="card p-7">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt">Téléphone</p>
+          <a [href]="phoneHref" class="mt-2 block font-display text-2xl font-extrabold text-cobalt hover:underline">{{ shop.phone }}</a>
+          @if (shop.hours) { <p class="mt-2 text-sm text-muted">{{ shop.hours }}</p> }
         </div>
       }
       @if (shop.email) {
-        <div class="rounded-2xl border border-line bg-white p-6">
-          <h2 class="font-display text-lg font-semibold">E-mail</h2>
-          <a [href]="emailHref" class="mt-2 block break-all font-semibold text-cobalt hover:underline focus-visible:outline-2 focus-visible:outline-cobalt">{{ shop.email }}</a>
+        <div class="card p-7">
+          <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt">E-mail</p>
+          <a [href]="emailHref" class="mt-3 block break-all font-semibold text-cobalt hover:underline">{{ shop.email }}</a>
         </div>
       }
     </div>
   } @else {
-    <div class="rounded-2xl border border-line bg-white p-8">
-      <h2 class="font-display text-lg font-semibold">Nos coordonnées arrivent bientôt</h2>
-      <p class="mt-2 text-ink/70">En attendant, vous pouvez nous écrire en décrivant votre besoin depuis la page Services : nous vous rappelons.</p>
+    <div class="card p-8">
+      <h2 class="font-display text-lg font-bold">Nos coordonnées arrivent bientôt</h2>
+      <p class="mt-2 text-muted">En attendant, décrivez votre besoin depuis la page Services : nous vous rappelons.</p>
     </div>
   }
 
   <div class="mt-4 grid gap-4 sm:grid-cols-2">
-    <div class="rounded-2xl border border-line bg-white p-6">
-      <h2 class="font-display text-lg font-semibold">Adresse</h2>
-      <p class="mt-2 text-ink/80">{{ shop.address }}</p>
-      @if (shop.hours && !shop.phone) { <p class="mt-2 text-sm text-ink/70">{{ shop.hours }}</p> }
+    <div class="card p-7">
+      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-cobalt">Adresse</p>
+      <h2 class="mt-2 font-display text-lg font-bold">{{ shop.address }}</h2>
+      @if (shop.hours && !shop.phone) { <p class="mt-2 text-sm text-muted">{{ shop.hours }}</p> }
     </div>
-    <div class="rounded-2xl bg-ink p-6 text-white">
-      <h2 class="font-display text-lg font-semibold">Un appareil en panne ?</h2>
+    <div class="rounded-[1.25rem] bg-ink p-7 text-white shadow-[var(--shadow-card)]">
+      <h2 class="font-display text-lg font-bold">Un appareil en panne ?</h2>
       <p class="mt-2 text-sm text-white/70">Décrivez le problème, nous vous rappelons pour convenir de la suite.</p>
-      <a routerLink="/services" fragment="demande" class="mt-4 inline-block rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Demander une réparation</a>
+      <a routerLink="/services" fragment="demande" class="btn btn-primary mt-5">Demander une réparation</a>
     </div>
   </div>
 </div>

@@ -8,17 +8,26 @@
     </div>
   } @else {
     <div class="mt-6 flex flex-wrap gap-3">
-      <input #sq type="search" (keydown.enter)="setSearch(sq.value)" placeholder="N°, nom ou téléphone" aria-label="Rechercher une commande" class="rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-cobalt" />
-      <select #st (change)="setStatus(st.value)" aria-label="Filtrer par statut" class="rounded-full border border-line bg-white px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-cobalt">
+      <input #sq type="search" [value]="search()" (keydown.enter)="applySearch(sq.value)" placeholder="N°, nom ou téléphone" aria-label="Rechercher une commande" class="rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-cobalt" />
+      <button type="button" (click)="applySearch(sq.value)" class="rounded-full bg-cobalt px-5 py-2 text-sm font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt">Rechercher</button>
+      <select #st [value]="status()" (change)="setStatus(st.value)" aria-label="Filtrer par statut" class="rounded-full border border-line bg-white px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-cobalt">
         <option value="">Tous les statuts</option>
         @for (o of options; track o.value) {
           <option [value]="o.value">{{ o.label }}</option>
         }
       </select>
+      @if (search() || status()) {
+        <button type="button" (click)="clearFilters()" class="rounded-full border border-line bg-white px-4 py-2 text-sm font-medium hover:border-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Effacer les filtres</button>
+      }
     </div>
 
     @if (loading()) {
       <p class="mt-6 text-ink/60">Chargement...</p>
+    } @else if (error()) {
+      <div role="alert" class="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+        <p>{{ error() }}</p>
+        <button type="button" (click)="load()" class="rounded-full border border-red-300 bg-white px-4 py-2 font-semibold hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-red-700">Réessayer</button>
+      </div>
     } @else if (orders().length === 0) {
       <p class="mt-6 rounded-2xl border border-line bg-white p-6 text-ink/70">Aucune commande ne correspond.</p>
     } @else {

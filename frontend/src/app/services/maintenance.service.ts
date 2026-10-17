@@ -43,6 +43,14 @@ export const MAINTENANCE_STATUSES = [
   { value: 'cancelled', label: 'Annulée' },
 ];
 
+export const MAINTENANCE_TRANSITIONS: Record<string, string[]> = {
+  new: ['in_progress', 'cancelled'],
+  in_progress: ['ready', 'cancelled'],
+  ready: ['done', 'cancelled'],
+  done: [],
+  cancelled: [],
+};
+
 export function deviceLabel(value: string): string {
   return DEVICE_OPTIONS.find((o) => o.value === value)?.label ?? value;
 }

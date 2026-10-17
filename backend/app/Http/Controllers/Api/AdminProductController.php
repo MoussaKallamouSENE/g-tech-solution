@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\InventoryMovement;
 use App\Models\Product;
+use App\Services\InventoryMovementService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AdminProductController extends Controller
 {
+    public function __construct(private readonly InventoryMovementService $inventoryMovementService) {}
+
     private function rules(?int $ignoreId = null): array
     {
         return [
@@ -27,6 +32,7 @@ class AdminProductController extends Controller
             'storage' => ['nullable', 'string', 'max:100'],
             'graphics_card' => ['nullable', 'string', 'max:100'],
             'screen' => ['nullable', 'string', 'max:100'],
+            'warranty_conditions' => ['nullable', 'string', 'max:5000'],
             'state' => ['required', Rule::in(['neuf', 'occasion', 'reconditionné'])],
             'is_active' => ['required', 'boolean'],
         ];
@@ -91,16 +97,45 @@ class AdminProductController extends Controller
     {
         $data = $request->validate($this->rules(), $this->messages());
         $data['slug'] = $this->uniqueSlug($data['name']);
+        $initialStock = $data['stock'];
+        $data['stock'] = 0;
 
-        return response()->json(Product::create($data)->load('category'), 201);
+        $product = DB::transaction(function () use ($data, $initialStock, $request) {
+            $product = Product::create($data);
+            $this->inventoryMovementService->adjust(
+                $product,
+                $initialStock,
+                'opening_balance',
+                $request->user()->id,
+                note: 'Stock initial à la création du produit.',
+            );
+
+            return $product->fresh()->load('category');
+        });
+
+        return response()->json($product, 201);
     }
 
     public function update(Request $request, int $id)
     {
-        $product = Product::findOrFail($id);
-        $product->update($request->validate($this->rules($product->id), $this->messages()));
+        $data = $request->validate($this->rules($id), $this->messages());
+        $product = DB::transaction(function () use ($id, $data, $request) {
+            $product = Product::query()->lockForUpdate()->findOrFail($id);
+            $newStock = $data['stock'];
+            unset($data['stock']);
+            $product->update($data);
+            $this->inventoryMovementService->setStock(
+                $product,
+                $newStock,
+                'manual_adjustment',
+                $request->user()->id,
+                'Ajustement manuel du stock depuis la fiche produit.',
+            );
 
-        return $product->load('category');
+            return $product->fresh()->load('category');
+        });
+
+        return $product;
     }
 
     public function uploadImage(Request $request, int $id)
@@ -156,12 +191,39 @@ class AdminProductController extends Controller
 
     public function patch(Request $request, int $id)
     {
-        $product = Product::findOrFail($id);
-        $product->update($request->validate([
+        $data = $request->validate([
             'stock' => ['sometimes', 'integer', 'min:0'],
             'is_active' => ['sometimes', 'boolean'],
-        ], $this->messages()));
+        ], $this->messages());
 
-        return $product->load('category');
+        $product = DB::transaction(function () use ($id, $data, $request) {
+            $product = Product::query()->lockForUpdate()->findOrFail($id);
+            if (array_key_exists('stock', $data)) {
+                $this->inventoryMovementService->setStock(
+                    $product,
+                    $data['stock'],
+                    'manual_adjustment',
+                    $request->user()->id,
+                    'Ajustement manuel du stock depuis la liste des produits.',
+                );
+                unset($data['stock']);
+            }
+            $product->update($data);
+
+            return $product->fresh()->load('category');
+        });
+
+        return $product;
+    }
+
+    public function stockMovements(int $id)
+    {
+        Product::findOrFail($id);
+
+        return InventoryMovement::query()
+            ->where('product_id', $id)
+            ->with(['user:id,name', 'order:id,number', 'purchaseReceipt:id,number'])
+            ->latest()
+            ->paginate(25);
     }
 }

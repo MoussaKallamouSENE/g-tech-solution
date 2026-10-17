@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-3xl px-4 py-10">
+<div class="mx-auto max-w-3xl px-4 py-8 lg:px-10">
   <a routerLink="/admin/produits" class="text-sm font-medium text-ink/70 hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">&larr; Produits</a>
   <h1 class="mt-4 font-display text-3xl font-bold tracking-tight">{{ id ? 'Modifier le produit' : 'Ajouter un produit' }}</h1>
 
@@ -132,5 +132,59 @@
         <a routerLink="/admin/produits" class="rounded-full border border-line px-6 py-3 font-semibold hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Annuler</a>
       </div>
     </form>
+
+    @if (id) {
+      <section class="mt-8 rounded-2xl border border-line bg-white p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="font-display text-lg font-semibold">Historique du stock</h2>
+            <p class="mt-1 text-sm text-ink/60">Les mouvements sont conservés avec la quantité avant et après chaque opération.</p>
+          </div>
+          <button type="button" (click)="loadStockMovements()" [disabled]="movementsLoading()" class="rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-cobalt hover:text-cobalt disabled:opacity-50">
+            {{ movementsLoading() ? 'Actualisation...' : 'Actualiser' }}
+          </button>
+        </div>
+
+        @if (movementsError()) {
+          <p role="alert" class="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ movementsError() }}</p>
+        } @else if (movementsLoading() && stockMovements().length === 0) {
+          <p class="mt-4 text-sm text-ink/60">Chargement des mouvements...</p>
+        } @else if (stockMovements().length === 0) {
+          <p class="mt-4 rounded-lg bg-mist p-4 text-sm text-ink/60">Aucun mouvement enregistré pour ce produit.</p>
+        } @else {
+          <div class="mt-5 overflow-x-auto">
+            <table class="w-full min-w-[620px] text-left text-sm">
+              <thead class="border-b border-line text-xs uppercase tracking-wide text-ink/50">
+                <tr>
+                  <th class="px-3 py-2 font-semibold">Date</th>
+                  <th class="px-3 py-2 font-semibold">Opération</th>
+                  <th class="px-3 py-2 text-right font-semibold">Variation</th>
+                  <th class="px-3 py-2 text-right font-semibold">Stock avant → après</th>
+                  <th class="px-3 py-2 font-semibold">Référence</th>
+                  <th class="px-3 py-2 font-semibold">Administrateur</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-line">
+                @for (movement of stockMovements(); track movement.id) {
+                  <tr>
+                    <td class="whitespace-nowrap px-3 py-3">{{ movement.created_at | date:'short' }}</td>
+                    <td class="px-3 py-3">
+                      <span>{{ movementLabel(movement.type) }}</span>
+                      @if (movement.note) { <p class="mt-0.5 text-xs text-ink/50">{{ movement.note }}</p> }
+                    </td>
+                    <td class="px-3 py-3 text-right font-semibold" [class]="movement.quantity_change > 0 ? 'text-mint' : 'text-red-600'">
+                      {{ movement.quantity_change > 0 ? '+' : '' }}{{ movement.quantity_change }}
+                    </td>
+                    <td class="px-3 py-3 text-right">{{ movement.stock_before }} → {{ movement.stock_after }}</td>
+                    <td class="px-3 py-3">{{ movement.order?.number ?? movement.purchase_receipt?.number ?? '—' }}</td>
+                    <td class="px-3 py-3">{{ movement.user?.name ?? 'Système' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
   }
 </div>

@@ -1,32 +1,46 @@
 <?php
 
+use App\Http\Controllers\Api\AdminCategoryController;
+use App\Http\Controllers\Api\AdminCustomerController;
 use App\Http\Controllers\Api\AdminDashboardController;
+use App\Http\Controllers\Api\AdminDeliveryController;
+use App\Http\Controllers\Api\AdminMaintenanceController;
 use App\Http\Controllers\Api\AdminOrderController;
 use App\Http\Controllers\Api\AdminProductController;
+use App\Http\Controllers\Api\AdminPurchaseReceiptController;
+use App\Http\Controllers\Api\AdminSupplierController;
+use App\Http\Controllers\Api\AdminZoneController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BrandController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CustomerDeliveryController;
 use App\Http\Controllers\Api\DeliveryZoneController;
-use App\Http\Controllers\Api\AdminMaintenanceController;
+use App\Http\Controllers\Api\DriverDeliveryController;
 use App\Http\Controllers\Api\MaintenanceRequestController;
-use App\Http\Controllers\Api\AdminCategoryController;
-use App\Http\Controllers\Api\AdminCustomerController;
-use App\Http\Controllers\Api\AdminZoneController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureDriver;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+Route::post('/password/email', [AuthController::class, 'sendPasswordResetLink'])->middleware('throttle:5,1');
+Route::post('/password/reset', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
+
+Route::get('/delivery-zones', [DeliveryZoneController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/me', [AuthController::class, 'updateProfile']);
+    Route::put('/me/password', [AuthController::class, 'updatePassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:20,1');
     Route::get('/orders/{id}', [OrderController::class, 'show']);
+    Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
+    Route::get('/orders/{orderId}/delivery', [CustomerDeliveryController::class, 'show']);
     Route::get('/orders/{id}/invoice', [OrderController::class, 'invoice']);
 });
 
@@ -36,6 +50,13 @@ Route::middleware(['auth:sanctum', EnsureAdmin::class])->prefix('admin')->group(
     Route::get('/orders', [AdminOrderController::class, 'index']);
     Route::get('/orders/{id}', [AdminOrderController::class, 'show']);
     Route::patch('/orders/{id}/status', [AdminOrderController::class, 'updateStatus']);
+    Route::post('/orders/{id}/notifications/retry', [AdminOrderController::class, 'retryNotification'])->middleware('throttle:10,1');
+    Route::get('/deliveries', [AdminDeliveryController::class, 'index']);
+    Route::get('/drivers', [AdminDeliveryController::class, 'drivers']);
+    Route::post('/drivers', [AdminDeliveryController::class, 'createDriver'])->middleware('throttle:10,1');
+    Route::get('/delivery-orders/pending', [AdminDeliveryController::class, 'pendingOrders']);
+    Route::post('/orders/{orderId}/delivery', [AdminDeliveryController::class, 'assign']);
+    Route::patch('/deliveries/{deliveryId}/status', [AdminDeliveryController::class, 'updateStatus']);
 
     Route::get('/products', [AdminProductController::class, 'index']);
     Route::post('/products', [AdminProductController::class, 'store']);
@@ -54,6 +75,20 @@ Route::middleware(['auth:sanctum', EnsureAdmin::class])->prefix('admin')->group(
     Route::get('/maintenance-requests', [AdminMaintenanceController::class, 'index']);
     Route::patch('/maintenance-requests/{id}', [AdminMaintenanceController::class, 'update']);
     Route::delete('/products/{id}/image', [AdminProductController::class, 'deleteImage']);
+    Route::get('/products/{id}/stock-movements', [AdminProductController::class, 'stockMovements']);
+    Route::get('/suppliers', [AdminSupplierController::class, 'index']);
+    Route::post('/suppliers', [AdminSupplierController::class, 'store']);
+    Route::put('/suppliers/{id}', [AdminSupplierController::class, 'update']);
+    Route::get('/purchase-receipts', [AdminPurchaseReceiptController::class, 'index']);
+    Route::post('/purchase-receipts', [AdminPurchaseReceiptController::class, 'store'])->middleware('throttle:30,1');
+});
+
+Route::middleware(['auth:sanctum', EnsureDriver::class])->prefix('driver')->group(function () {
+    Route::get('/deliveries', [DriverDeliveryController::class, 'index']);
+    Route::patch('/deliveries/{deliveryId}/status', [DriverDeliveryController::class, 'updateStatus']);
+    Route::post('/deliveries/{deliveryId}/location/start', [DriverDeliveryController::class, 'startLocationSharing']);
+    Route::post('/deliveries/{deliveryId}/location/stop', [DriverDeliveryController::class, 'stopLocationSharing']);
+    Route::put('/deliveries/{deliveryId}/location', [DriverDeliveryController::class, 'updateLocation'])->middleware('throttle:6,1');
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);

@@ -11,9 +11,20 @@ interface Dashboard {
   orders_pending: number;
   repairs_new: number;
   low_stock: number;
+  stock_units_available: number;
+  purchases_month_total: number;
+  purchases_month_count: number;
   top_products: { name: string; sold: number | string }[];
   recent_orders: { id: number; number: string; customer_name: string; total: number; status: string; created_at: string }[];
   low_stock_products: { id: number; name: string; stock: number; stock_alert_threshold: number }[];
+  recent_purchases: {
+    id: number;
+    number: string;
+    received_at: string;
+    total_cost: number;
+    items_count: number;
+    supplier: { id: number; name: string };
+  }[];
 }
 
 @Component({

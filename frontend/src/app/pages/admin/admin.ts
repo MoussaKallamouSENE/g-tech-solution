@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
-import { AdminService, AdminStats, STATUS_OPTIONS } from '../../services/admin.service';
+import { AdminService, STATUS_OPTIONS } from '../../services/admin.service';
 import { Order, formatDate, formatPrice, statusClass, statusLabel } from '../../services/order.service';
+import { errorMessage } from '../../services/auth.service';
 
 @Component({
   selector: 'app-admin',
@@ -12,7 +13,6 @@ import { Order, formatDate, formatPrice, statusClass, statusLabel } from '../../
 export class Admin {
   private readonly service = inject(AdminService);
 
-  protected readonly stats = signal<AdminStats | null>(null);
   protected readonly orders = signal<Order[]>([]);
   protected readonly total = signal(0);
   protected readonly page = signal(1);
@@ -21,6 +21,7 @@ export class Admin {
   protected readonly search = signal('');
   protected readonly loading = signal(true);
   protected readonly denied = signal(false);
+  protected readonly error = signal('');
 
   protected readonly options = STATUS_OPTIONS;
   protected readonly formatPrice = formatPrice;
@@ -29,15 +30,12 @@ export class Admin {
   protected readonly statusClass = statusClass;
 
   constructor() {
-    this.service.getStats().subscribe({
-      next: (stats) => this.stats.set(stats),
-      error: (err: HttpErrorResponse) => this.onError(err),
-    });
     this.load();
   }
 
   protected load(): void {
     this.loading.set(true);
+    this.error.set('');
     this.service.getOrders({ status: this.status(), search: this.search(), page: this.page() }).subscribe({
       next: (res) => {
         this.orders.set(res.data);
@@ -47,6 +45,7 @@ export class Admin {
       },
       error: (err: HttpErrorResponse) => {
         this.onError(err);
+        this.error.set(errorMessage(err));
         this.loading.set(false);
       },
     });
@@ -58,14 +57,21 @@ export class Admin {
     }
   }
 
+  protected applySearch(value: string): void {
+    this.search.set(value.trim());
+    this.page.set(1);
+    this.load();
+  }
+
   protected setStatus(value: string): void {
     this.status.set(value);
     this.page.set(1);
     this.load();
   }
 
-  protected setSearch(value: string): void {
-    this.search.set(value.trim());
+  protected clearFilters(): void {
+    this.search.set('');
+    this.status.set('');
     this.page.set(1);
     this.load();
   }

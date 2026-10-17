@@ -1,6 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Order, OrderService, formatDate, formatPrice, statusClass, statusLabel } from '../../services/order.service';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import {
+  Order,
+  OrderService,
+  emailStatusClass,
+  emailStatusLabel,
+  formatDate,
+  formatPrice,
+  statusClass,
+  statusLabel,
+  whatsappStatusClass,
+  whatsappStatusLabel,
+} from '../../services/order.service';
 
 @Component({
   selector: 'app-order-detail',
@@ -10,6 +22,8 @@ import { Order, OrderService, formatDate, formatPrice, statusClass, statusLabel 
 export class OrderDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly service = inject(OrderService);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly order = signal<Order | null>(null);
   protected readonly loading = signal(true);
@@ -19,6 +33,10 @@ export class OrderDetail {
   protected readonly formatDate = formatDate;
   protected readonly statusLabel = statusLabel;
   protected readonly statusClass = statusClass;
+  protected readonly emailStatusLabel = emailStatusLabel;
+  protected readonly emailStatusClass = emailStatusClass;
+  protected readonly whatsappStatusLabel = whatsappStatusLabel;
+  protected readonly whatsappStatusClass = whatsappStatusClass;
 
   protected readonly invoiceBusy = signal(false);
   protected readonly invoiceError = signal('');
@@ -36,6 +54,12 @@ export class OrderDetail {
   }
 
   constructor() {
+    if (!this.auth.user()) {
+      this.router.navigate(['/connexion'], { queryParams: { redirect: this.router.url } });
+      this.loading.set(false);
+      return;
+    }
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.service.getOrder(id).subscribe({
       next: (order) => {

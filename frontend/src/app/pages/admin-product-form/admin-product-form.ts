@@ -1,14 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AdminService, ProductPayload } from '../../services/admin.service';
+import { AdminService, InventoryMovement, ProductPayload } from '../../services/admin.service';
 import { CatalogueService } from '../../services/catalogue.service';
 import { errorMessage } from '../../services/auth.service';
 import { Category, Product } from '../../models/catalogue';
 
 @Component({
   selector: 'app-admin-product-form',
-  imports: [RouterLink],
+  imports: [DatePipe, RouterLink],
   templateUrl: './admin-product-form.html',
 })
 export class AdminProductForm {
@@ -24,6 +25,9 @@ export class AdminProductForm {
   protected readonly denied = signal(false);
   protected readonly saving = signal(false);
   protected readonly error = signal('');
+  protected readonly stockMovements = signal<InventoryMovement[]>([]);
+  protected readonly movementsLoading = signal(false);
+  protected readonly movementsError = signal('');
 
   protected readonly states = ['neuf', 'occasion', 'reconditionné'];
 
@@ -36,6 +40,7 @@ export class AdminProductForm {
           this.product.set(product);
           this.imageUrl.set(product.image_url ?? null);
           this.ready.set(true);
+          this.loadStockMovements();
         },
         error: (err: HttpErrorResponse) => {
           if (err.status === 401 || err.status === 403) {
@@ -53,6 +58,37 @@ export class AdminProductForm {
   protected readonly imageBusy = signal(false);
   protected readonly imageMessage = signal('');
   protected readonly imageError = signal('');
+
+  protected loadStockMovements(): void {
+    if (!this.id) {
+      return;
+    }
+
+    this.movementsLoading.set(true);
+    this.movementsError.set('');
+    this.admin.getStockMovements(this.id).subscribe({
+      next: (response) => {
+        this.stockMovements.set(response.data);
+        this.movementsLoading.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.movementsError.set(errorMessage(err));
+        this.movementsLoading.set(false);
+      },
+    });
+  }
+
+  protected movementLabel(type: InventoryMovement['type']): string {
+    const labels: Record<InventoryMovement['type'], string> = {
+      opening_balance: 'Stock initial',
+      manual_adjustment: 'Ajustement manuel',
+      order_confirmation: 'Confirmation de commande',
+      order_cancellation: 'Annulation de commande',
+      purchase_receipt: "Réception d'achat",
+    };
+
+    return labels[type];
+  }
 
   protected uploadImage(input: HTMLInputElement): void {
     const file = input.files?.[0];

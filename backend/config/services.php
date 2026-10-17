@@ -35,4 +35,18 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'enabled' => env('WHATSAPP_ENABLED', false),
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'api_version' => env('WHATSAPP_API_VERSION', 'v23.0'),
+        'template_name' => env('WHATSAPP_TEMPLATE_NAME'),
+        'template_language' => env('WHATSAPP_TEMPLATE_LANGUAGE', 'fr'),
+    ],
+
+    'delivery' => [
+        'location_retention_days' => (int) env('DELIVERY_LOCATION_RETENTION_DAYS', 30),
+        'location_stale_minutes' => (int) env('DELIVERY_LOCATION_STALE_MINUTES', 5),
+    ],
+
 ];

@@ -1,48 +1,65 @@
 import { Routes } from '@angular/router';
-import { Home } from './pages/home/home';
-import { ProductDetail } from './pages/product-detail/product-detail';
-import { Cart } from './pages/cart/cart';
-import { Login } from './pages/login/login';
-import { Register } from './pages/register/register';
-import { Checkout } from './pages/checkout/checkout';
-import { Orders } from './pages/orders/orders';
-import { OrderDetail } from './pages/order-detail/order-detail';
-import { Services } from './pages/services/services';
-import { Contact } from './pages/contact/contact';
-import { Admin } from './pages/admin/admin';
-import { AdminLayout } from './pages/admin-layout/admin-layout';
-import { AdminDashboard } from './pages/admin-dashboard/admin-dashboard';
-import { AdminOrderPage } from './pages/admin-order/admin-order';
-import { AdminProducts } from './pages/admin-products/admin-products';
-import { AdminProductForm } from './pages/admin-product-form/admin-product-form';
-import { AdminMaintenance } from './pages/admin-maintenance/admin-maintenance';
-import { AdminCustomers } from './pages/admin-customers/admin-customers';
-import { AdminSettings } from './pages/admin-settings/admin-settings';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
-  { path: '', component: Home },
-  { path: 'produits/:id', component: ProductDetail },
-  { path: 'panier', component: Cart },
-  { path: 'commande', component: Checkout },
-  { path: 'commandes', component: Orders },
-  { path: 'commandes/:id', component: OrderDetail },
-  { path: 'services', component: Services },
-  { path: 'contact', component: Contact },
-  { path: 'connexion', component: Login },
-  { path: 'inscription', component: Register },
+  { path: '', loadComponent: () => import('./pages/home/home').then((m) => m.Home) },
+  {
+    path: 'produits/:id',
+    loadComponent: () => import('./pages/product-detail/product-detail').then((m) => m.ProductDetail),
+  },
+  { path: 'panier', loadComponent: () => import('./pages/cart/cart').then((m) => m.Cart) },
+  { path: 'commande', loadComponent: () => import('./pages/checkout/checkout').then((m) => m.Checkout) },
+  { path: 'commandes', loadComponent: () => import('./pages/orders/orders').then((m) => m.Orders) },
+  {
+    path: 'commandes/:id',
+    loadComponent: () => import('./pages/order-detail/order-detail').then((m) => m.OrderDetail),
+  },
+  { path: 'services', loadComponent: () => import('./pages/services/services').then((m) => m.Services) },
+  { path: 'contact', loadComponent: () => import('./pages/contact/contact').then((m) => m.Contact) },
+  { path: 'connexion', loadComponent: () => import('./pages/login/login').then((m) => m.Login) },
+  { path: 'inscription', loadComponent: () => import('./pages/register/register').then((m) => m.Register) },
   {
     path: 'admin',
-    component: AdminLayout,
+    canActivate: [adminGuard],
+    loadComponent: () => import('./pages/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [
-      { path: '', component: AdminDashboard },
-      { path: 'commandes', component: Admin },
-      { path: 'commandes/:id', component: AdminOrderPage },
-      { path: 'produits', component: AdminProducts },
-      { path: 'produits/nouveau', component: AdminProductForm },
-      { path: 'produits/:id/modifier', component: AdminProductForm },
-      { path: 'clients', component: AdminCustomers },
-      { path: 'maintenance', component: AdminMaintenance },
-      { path: 'boutique', component: AdminSettings },
+      {
+        path: '',
+        loadComponent: () => import('./pages/admin-dashboard/admin-dashboard').then((m) => m.AdminDashboard),
+      },
+      { path: 'commandes', loadComponent: () => import('./pages/admin/admin').then((m) => m.Admin) },
+      {
+        path: 'commandes/:id',
+        loadComponent: () => import('./pages/admin-order/admin-order').then((m) => m.AdminOrderPage),
+      },
+      {
+        path: 'produits',
+        loadComponent: () => import('./pages/admin-products/admin-products').then((m) => m.AdminProducts),
+      },
+      {
+        path: 'produits/nouveau',
+        loadComponent: () => import('./pages/admin-product-form/admin-product-form').then((m) => m.AdminProductForm),
+      },
+      {
+        path: 'produits/:id/modifier',
+        loadComponent: () => import('./pages/admin-product-form/admin-product-form').then((m) => m.AdminProductForm),
+      },
+      {
+        path: 'fournisseurs',
+        loadComponent: () => import('./pages/admin-suppliers/admin-suppliers').then((m) => m.AdminSuppliers),
+      },
+      {
+        path: 'clients',
+        loadComponent: () => import('./pages/admin-customers/admin-customers').then((m) => m.AdminCustomers),
+      },
+      {
+        path: 'maintenance',
+        loadComponent: () => import('./pages/admin-maintenance/admin-maintenance').then((m) => m.AdminMaintenance),
+      },
+      {
+        path: 'boutique',
+        loadComponent: () => import('./pages/admin-settings/admin-settings').then((m) => m.AdminSettings),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

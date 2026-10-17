@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
 export interface DeliveryZone {
@@ -21,6 +21,10 @@ export interface Order {
   id: number;
   number: string;
   status: string;
+  email_status?: 'pending' | 'sending' | 'sent' | 'failed' | null;
+  email_sent_at?: string | null;
+  whatsapp_status?: 'not_configured' | 'pending' | 'sending' | 'sent' | 'failed' | null;
+  whatsapp_sent_at?: string | null;
   payment_method: string;
   customer_name: string;
   customer_phone: string;
@@ -41,7 +45,7 @@ export interface OrderPayload {
   customer_name: string;
   customer_phone: string;
   customer_address: string;
-  notes: string;
+  notes?: string | null;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -68,6 +72,64 @@ export function statusClass(status: string): string {
     return 'bg-amber-50 text-amber-700';
   }
   return 'bg-cobalt/10 text-cobalt';
+}
+
+export function emailStatusLabel(status?: string | null): string {
+  if (status === 'sent') {
+    return 'E-mail envoyé';
+  }
+  if (status === 'sending') {
+    return 'Envoi de l’e-mail...';
+  }
+  if (status === 'failed') {
+    return 'E-mail non envoyé';
+  }
+  if (status === 'pending') {
+    return 'E-mail en attente';
+  }
+  return 'E-mail non traité';
+}
+
+export function emailStatusClass(status?: string | null): string {
+  if (status === 'sent') {
+    return 'bg-mint/15 text-mint';
+  }
+  if (status === 'failed') {
+    return 'bg-red-50 text-red-600';
+  }
+  if (status === 'pending' || status === 'sending') {
+    return 'bg-amber-50 text-amber-700';
+  }
+  return 'bg-slate-100 text-slate-600';
+}
+
+export function whatsappStatusLabel(status?: string | null): string {
+  if (status === 'sent') {
+    return 'WhatsApp envoyé';
+  }
+  if (status === 'sending') {
+    return 'Envoi WhatsApp...';
+  }
+  if (status === 'failed') {
+    return 'WhatsApp non envoyé';
+  }
+  if (status === 'pending') {
+    return 'WhatsApp en attente';
+  }
+  return 'WhatsApp désactivé';
+}
+
+export function whatsappStatusClass(status?: string | null): string {
+  if (status === 'sent') {
+    return 'bg-mint/15 text-mint';
+  }
+  if (status === 'failed') {
+    return 'bg-red-50 text-red-600';
+  }
+  if (status === 'pending' || status === 'sending') {
+    return 'bg-amber-50 text-amber-700';
+  }
+  return 'bg-slate-100 text-slate-600';
 }
 
 export function formatPrice(price: number): string {
@@ -104,8 +166,14 @@ export class OrderService {
     );
   }
 
-  getOrders(): Observable<Order[]> {
-    return this.http.get<Order[]>(`${this.apiUrl}/orders`);
+  getOrders(filters: { status?: string; sort?: string } = {}): Observable<Order[]> {
+    let params = new HttpParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== '' && value !== null) {
+        params = params.set(key, String(value));
+      }
+    }
+    return this.http.get<Order[]>(`${this.apiUrl}/orders`, { params });
   }
 
   getOrder(id: number): Observable<Order> {

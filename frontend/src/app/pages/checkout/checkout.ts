@@ -43,6 +43,31 @@ export class Checkout {
       return;
     }
     if (this.cart.items().length === 0) {
+      this.error.set('Votre panier est vide.');
+      return;
+    }
+
+    const staleItem = this.cart.items().find((item) => item.quantity > item.stock);
+    if (staleItem) {
+      this.error.set(`Le stock de ${staleItem.name} a changé. Réduisez votre quantité à ${staleItem.stock} article(s) maximum.`);
+      return;
+    }
+
+    const customerName = name.trim();
+    const customerPhone = phone.trim();
+    const customerAddress = address.trim();
+    const customerNotes = notes.trim();
+
+    if (customerName.length < 2) {
+      this.error.set('Le nom complet est obligatoire.');
+      return;
+    }
+    if (customerPhone.length < 8 || !/^[0-9+()\s.-]{8,30}$/.test(customerPhone)) {
+      this.error.set('Le numéro de téléphone est invalide.');
+      return;
+    }
+    if (customerAddress.length < 10) {
+      this.error.set('Précisez une adresse de livraison complète (au moins 10 caractères).');
       return;
     }
 
@@ -51,10 +76,10 @@ export class Checkout {
       .createOrder({
         items: this.cart.items().map((item) => ({ product_id: item.id, quantity: item.quantity })),
         delivery_zone_id: zoneId,
-        customer_name: name.trim(),
-        customer_phone: phone.trim(),
-        customer_address: address.trim(),
-        notes: notes.trim(),
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_address: customerAddress,
+        notes: customerNotes || null,
       })
       .subscribe({
         next: (order) => {

@@ -53,6 +53,56 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
+## Notifications et livraisons G-Tech
+
+### Configuration et démarrage
+
+Les migrations de suivi des notifications et des livraisons sont additives. Copiez `.env.example` vers `.env` à la racine du dépôt et définissez un mot de passe MySQL local; configurez `backend/.env` avec la même valeur dans `DB_PASSWORD` ainsi que `DB_CONNECTION=mysql`, `DB_HOST=db`, `DB_DATABASE=gtech` et `DB_USERNAME=root`. Pour un volume MySQL déjà initialisé, gardez son mot de passe existant : Compose ne modifie pas le mot de passe stocké dans ce volume.
+
+```powershell
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+# Configurez MYSQL_ROOT_PASSWORD dans .env et la même valeur dans backend/.env.
+docker compose up -d --build nginx php db
+docker compose exec php php artisan migrate
+docker compose up -d --build queue-worker delivery-scheduler
+docker compose logs -f queue-worker
+docker compose logs -f delivery-scheduler
+```
+
+Ne lancez pas `migrate:fresh`, `db:wipe` ni de suppression du volume de données. `QUEUE_CONNECTION=database` utilise la table `jobs`; le worker Compose traite l’e-mail et WhatsApp hors de la requête HTTP. Les erreurs permanentes restent visibles dans la commande et une nouvelle tentative peut être demandée par un administrateur depuis la fiche de commande.
+
+Pour le courrier, configurez uniquement dans `backend/.env` : `MAIL_MAILER=smtp`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_SCHEME`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS` et `MAIL_FROM_NAME`. La valeur `log` de l’exemple sert au développement et ne livre pas de vrai e-mail. Ne placez jamais ces secrets dans Angular ni dans un fichier suivi par Git.
+
+Pour WhatsApp Business Cloud, configurez côté backend `WHATSAPP_ENABLED=true`, `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_API_VERSION`, `WHATSAPP_TEMPLATE_NAME` et `WHATSAPP_TEMPLATE_LANGUAGE`. Le modèle doit être approuvé par Meta et correspondre aux six paramètres texte envoyés dans cet ordre : nom du client, numéro de commande, articles, montant, adresse et statut. Le client doit avoir explicitement coché l’option WhatsApp et fournir un numéro international (`+` suivi du numéro E.164). Sans consentement ou configuration complète, aucun message n’est envoyé. Les jetons restent hors du dépôt.
+
+### Factures PDF et garanties
+
+Les factures A4 utilisent la dépendance DomPDF déjà installée. Les clients authentifiés ne peuvent télécharger que les factures de leurs commandes; l’administration peut consulter et télécharger toute facture. Les numéros sont attribués une seule fois, enregistrés et protégés par une contrainte unique. La migration attribue aussi un numéro aux commandes existantes.
+
+Les conditions commerciales spécifiques sont modifiables dans la fiche produit par l’administration et copiées, avec les caractéristiques du produit, sur chaque ligne de commande lors de l’achat. Les anciennes commandes sans instantané n’héritent pas rétroactivement des conditions actuelles; la facture indique explicitement l’absence de conditions spécifiques enregistrées. Les clauses commerciales générales rappellent le signalement sous 72 heures, la couverture commerciale limitée à la carte mère, l’information préalable des frais de réparation et la préservation des droits légaux.
+
+Les coordonnées imprimées sont configurables dans `backend/.env` par `GTECH_INVOICE_COMPANY_NAME`, `GTECH_INVOICE_ADDRESS`, `GTECH_INVOICE_PHONE`, `GTECH_INVOICE_EMAIL` et `GTECH_INVOICE_WEBSITE`. Aucun téléphone, courriel ou site n’est inventé par défaut. Le système ne stocke pas les paiements encaissés ni les remises; la facture n’affirme donc pas qu’un règlement a eu lieu et ne calcule pas de solde restant.
+
+Après sauvegarde, appliquez les migrations additives avec `docker compose exec php php artisan migrate --force`. Ne lancez pas `migrate:fresh` ni `db:wipe`.
+
+### Affectation, GPS et carte
+
+Un administrateur crée les comptes de livreur dans **Administration → Livraisons GPS**; l’inscription publique ne permet pas de choisir un rôle privilégié. Il associe ensuite les commandes confirmées à un compte livreur et marque la livraison prête. Le livreur se connecte sur `/livreur`; les API ne lui renvoient que ses propres livraisons. Les routes administrateur permettent la gestion globale. Le client connecté peut consulter le suivi via `GET /api/orders/{orderId}/delivery` uniquement si la commande lui appartient; cette réponse ne contient que les informations de sa livraison et les coordonnées ne sont renvoyées que si celle-ci est en cours et que le partage GPS est actif. La fiche de commande actualise le suivi toutes les 30 secondes, affiche l’absence ou l’ancienneté d’une position, et ne fournit pas d’heure d’arrivée estimée.
+
+Le partage GPS ne démarre qu’après une autorisation navigateur explicite et une action du livreur. Le navigateur conserve au plus la position la plus récente en mémoire en cas de perte réseau. Les points sont envoyés toutes les 15 secondes si leur précision est meilleure ou égale à 100 m; Laravel valide les plages latitude/longitude et limite les mises à jour à une par 10 secondes. La précision faible, le refus de permission et les indisponibilités réseau/GPS sont signalés dans l’interface. Les navigateurs peuvent suspendre le suivi écran verrouillé ou en arrière-plan : ce n’est pas un suivi continu garanti.
+
+Seule la dernière position est conservée, pas un historique d’itinéraire. Elle est supprimée par la tâche planifiée 30 jours après sa dernière échéance (`DELIVERY_LOCATION_RETENTION_DAYS`); le seuil d’affichage « ancienne » est réglé par `DELIVERY_LOCATION_STALE_MINUTES`. Le service `delivery-scheduler` exécute cette purge quotidienne. Les états de livraison, eux, conservent leur historique.
+
+La carte utilise Leaflet (BSD 2-Clause) avec attribution OpenStreetMap visible. La configuration actuelle emploie les tuiles publiques OSM, qui sont best-effort sans SLA et soumises à leur [politique d’utilisation](https://operations.osmfoundation.org/policies/tiles/). Pour un usage de production nécessitant une disponibilité garantie, remplacez `DELIVERY_MAP_TILE_URL` dans `../frontend/src/app/config/delivery.ts` par un fournisseur ou un hébergement adapté, après vérification de sa licence, de ses quotas, de l’attribution et des conditions d’utilisation. Aucune position de substitution n’est affichée si la position ou les tuiles sont indisponibles.
+
+Pour compiler le frontend après installation des dépendances :
+
+```powershell
+Set-Location frontend
+npm run build
+npm test -- --watch=false
+```
+
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

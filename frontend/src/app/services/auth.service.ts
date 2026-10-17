@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, finalize, tap } from 'rxjs';
+import { Observable, catchError, finalize, of, tap, throwError } from 'rxjs';
 
 export interface User {
   id: number;
@@ -49,18 +49,32 @@ export class AuthService {
 
   readonly user = signal<User | null>(null);
   readonly isLoggedIn = computed(() => this.user() !== null);
+  readonly sessionLoadError = signal<HttpErrorResponse | null>(null);
 
   constructor() {
-    if (getToken()) {
-      this.http.get<User>(`${this.apiUrl}/me`).subscribe({
-        next: (user) => this.user.set(user),
-        error: (err: HttpErrorResponse) => {
-          if (err.status === 401) {
-            this.clear();
-          }
-        },
-      });
+    this.loadCurrentUser().subscribe({
+      error: (err: HttpErrorResponse) => this.sessionLoadError.set(err),
+    });
+  }
+
+  loadCurrentUser(): Observable<User | null> {
+    if (!getToken()) {
+      return of(null);
     }
+
+    return this.http.get<User>(`${this.apiUrl}/me`).pipe(
+      tap((user) => {
+        this.user.set(user);
+        this.sessionLoadError.set(null);
+      }),
+      catchError((err: HttpErrorResponse) => {
+        if (err.status === 401) {
+          this.clear();
+          return of(null);
+        }
+        return throwError(() => err);
+      }),
+    );
   }
 
   register(data: { name: string; email: string; phone: string; password: string }): Observable<AuthResponse> {
@@ -91,5 +105,6 @@ export class AuthService {
       // Rien à faire.
     }
     this.user.set(null);
+    this.sessionLoadError.set(null);
   }
 }

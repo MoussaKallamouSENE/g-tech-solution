@@ -1,0 +1,183 @@
+<div class="px-4 py-8 lg:px-10">
+  <a routerLink="/admin" class="text-sm font-semibold text-muted hover:text-cobalt">&larr; Administration</a>
+  <div class="mt-4">
+    <h1 class="font-display text-3xl font-bold tracking-tight">Fournisseurs et achats</h1>
+    <p class="mt-2 max-w-3xl text-sm text-ink/60">Enregistrez une réception réelle : les coûts saisis sont conservés et les quantités reçues sont ajoutées au stock avec leur traçabilité.</p>
+  </div>
+
+  @if (denied()) {
+    <div class="mt-8 rounded-2xl border border-line bg-white p-8">
+      <p class="font-semibold">Accès réservé aux administrateurs.</p>
+      <a routerLink="/connexion" class="mt-5 inline-block rounded-full bg-cobalt px-6 py-3 font-semibold text-white hover:bg-cobalt-dark">Se connecter</a>
+    </div>
+  } @else {
+    @if (notice()) {
+      <p role="status" class="mt-5 rounded-lg border border-mint/30 bg-mint/10 p-3 text-sm">{{ notice() }}</p>
+    }
+    @if (problem()) {
+      <p role="alert" class="mt-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ problem() }}</p>
+    }
+
+    <div class="mt-7 grid gap-6 xl:grid-cols-[minmax(18rem,0.8fr)_minmax(0,1.4fr)]">
+      <section class="h-fit rounded-2xl border border-line bg-white p-5">
+        <h2 class="font-display text-xl font-bold">Ajouter un fournisseur</h2>
+        <form #supplierForm (submit)="createSupplier($event, supplierForm)" class="mt-4 grid gap-3">
+          <label class="grid gap-1 text-sm font-medium">Nom du fournisseur
+            <input name="name" required maxlength="255" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt" />
+          </label>
+          <label class="grid gap-1 text-sm font-medium">Contact
+            <input name="contact_name" maxlength="255" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt" />
+          </label>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="grid gap-1 text-sm font-medium">Téléphone
+              <input name="phone" type="tel" maxlength="30" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt" />
+            </label>
+            <label class="grid gap-1 text-sm font-medium">E-mail
+              <input name="email" type="email" maxlength="255" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt" />
+            </label>
+          </div>
+          <label class="grid gap-1 text-sm font-medium">Adresse
+            <textarea name="address" maxlength="2000" rows="2" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt"></textarea>
+          </label>
+          @if (supplierProblem()) {
+            <p role="alert" class="text-sm text-red-700">{{ supplierProblem() }}</p>
+          }
+          <button type="submit" [disabled]="savingSupplier()" class="mt-1 rounded-full bg-cobalt px-5 py-2.5 text-sm font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50">
+            {{ savingSupplier() ? 'Enregistrement...' : 'Ajouter le fournisseur' }}
+          </button>
+        </form>
+
+        <h3 class="mt-8 border-t border-line pt-5 font-semibold">Fournisseurs enregistrés</h3>
+        @if (suppliers().length === 0) {
+          <p class="mt-3 text-sm text-ink/60">Aucun fournisseur pour le moment.</p>
+        } @else {
+          <ul class="mt-3 divide-y divide-line">
+            @for (supplier of suppliers(); track supplier.id) {
+              <li class="flex items-center justify-between gap-3 py-3">
+                <span class="min-w-0">
+                  <span class="block truncate text-sm font-medium">{{ supplier.name }}</span>
+                  <span class="block text-xs text-ink/50">{{ supplier.phone || supplier.email || 'Coordonnées non renseignées' }}</span>
+                </span>
+                <button type="button" (click)="toggleSupplier(supplier)" class="shrink-0 rounded-full px-3 py-1 text-xs font-semibold focus-visible:outline-2 focus-visible:outline-cobalt"
+                  [class]="supplier.is_active ? 'bg-mint/15 text-mint' : 'bg-slate-100 text-slate-500'">
+                  {{ supplier.is_active ? 'Actif' : 'Désactivé' }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="rounded-2xl border border-line bg-white p-5">
+        <h2 class="font-display text-xl font-bold">Enregistrer une réception</h2>
+        @if (activeSuppliers().length === 0) {
+          <p class="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Ajoutez ou réactivez un fournisseur avant d’enregistrer un achat.</p>
+        } @else {
+          <form #receiptForm (submit)="submitReceipt($event, receiptForm)" class="mt-4 grid gap-4">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label class="grid gap-1 text-sm font-medium">Fournisseur
+                <select name="supplier_id" required class="rounded-lg border border-line bg-white px-3 py-2 font-normal outline-none focus:border-cobalt">
+                  <option value="">Choisir un fournisseur</option>
+                  @for (supplier of suppliers(); track supplier.id) {
+                    @if (supplier.is_active) { <option [value]="supplier.id">{{ supplier.name }}</option> }
+                  }
+                </select>
+              </label>
+              <label class="grid gap-1 text-sm font-medium">Date de réception
+                <input name="received_at" type="date" required [value]="today" [max]="today" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt" />
+              </label>
+              <label class="grid gap-1 text-sm font-medium sm:col-span-2">Référence de facture fournisseur (facultatif)
+                <input name="supplier_reference" maxlength="100" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt" />
+              </label>
+            </div>
+
+            <div class="rounded-xl border border-line">
+              <div class="flex items-center justify-between gap-3 border-b border-line p-3">
+                <h3 class="font-semibold">Articles reçus</h3>
+                <button type="button" (click)="addLine()" class="text-sm font-semibold text-cobalt hover:underline">+ Ajouter une ligne</button>
+              </div>
+              <div class="grid gap-3 p-3">
+                <label class="grid gap-1 text-sm">Rechercher un produit
+                  <input #productSearch type="search" (input)="searchProducts(productSearch.value)" placeholder="Nom ou référence" class="rounded-lg border border-line px-3 py-2 outline-none focus:border-cobalt" />
+                </label>
+                @for (line of lines(); track line.rowId) {
+                  <div class="grid items-end gap-3 border-t border-line pt-3 sm:grid-cols-[minmax(0,1fr)_6rem_8rem_auto]">
+                    <label class="grid gap-1 text-sm font-medium">Produit
+                      <select [value]="line.productId ?? ''" (change)="updateLineFromEvent(line.rowId, 'productId', $event)" class="min-w-0 rounded-lg border border-line bg-white px-2 py-2 font-normal outline-none focus:border-cobalt">
+                        <option value="">Sélectionner</option>
+                        @for (product of products(); track product.id) {
+                          <option [value]="product.id">{{ product.name }} · {{ product.reference }}</option>
+                        }
+                      </select>
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium">Quantité
+                      <input type="number" min="1" max="1000000" [value]="line.quantity" (input)="updateLineFromEvent(line.rowId, 'quantity', $event)" class="w-full rounded-lg border border-line px-2 py-2 font-normal outline-none focus:border-cobalt" />
+                    </label>
+                    <label class="grid gap-1 text-sm font-medium">Coût unitaire (F CFA)
+                      <input type="number" min="0" max="1000000000" step="1" [value]="line.unitCost" (input)="updateLineFromEvent(line.rowId, 'unitCost', $event)" class="w-full rounded-lg border border-line px-2 py-2 font-normal outline-none focus:border-cobalt" />
+                    </label>
+                    <button type="button" (click)="removeLine(line.rowId)" [disabled]="lines().length === 1" [attr.aria-label]="'Retirer la ligne ' + (line.rowId)" class="rounded-lg px-2 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-30">Retirer</button>
+                    <p class="sm:col-span-4 text-right text-xs text-ink/60">Sous-total : {{ formatPrice(lineTotal(line)) }}</p>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <label class="grid gap-1 text-sm font-medium">Notes
+              <textarea name="notes" maxlength="5000" rows="2" class="rounded-lg border border-line px-3 py-2 font-normal outline-none focus:border-cobalt"></textarea>
+            </label>
+            <p class="text-right font-semibold">Total achat : {{ formatPrice(receiptTotal()) }}</p>
+            @if (!totalIsSafe()) {
+              <p role="alert" class="text-right text-sm text-red-700">Le montant total dépasse la limite de précision prise en charge.</p>
+            }
+            @if (receiptProblem()) {
+              <p role="alert" class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{{ receiptProblem() }}</p>
+            }
+            <button type="submit" [disabled]="savingReceipt()" class="rounded-full bg-cobalt px-5 py-3 text-sm font-semibold text-white hover:bg-cobalt-dark disabled:opacity-50">
+              {{ savingReceipt() ? 'Enregistrement...' : 'Enregistrer la réception et mettre à jour le stock' }}
+            </button>
+          </form>
+        }
+      </section>
+    </div>
+
+    <section class="mt-8">
+      <h2 class="font-display text-xl font-bold">Réceptions récentes</h2>
+      @if (loading()) {
+        <p class="mt-4 text-sm text-ink/60">Chargement...</p>
+      } @else if (receipts().length === 0) {
+        <p class="mt-4 rounded-2xl border border-line bg-white p-5 text-sm text-ink/60">Aucune réception enregistrée.</p>
+      } @else {
+        <div class="mt-4 overflow-x-auto rounded-2xl border border-line bg-white">
+          <table class="w-full min-w-180 text-left text-sm">
+            <thead class="border-b border-line text-ink/60">
+              <tr><th class="px-4 py-3 font-medium">Réception</th><th class="px-4 py-3 font-medium">Fournisseur</th><th class="px-4 py-3 font-medium">Articles</th><th class="px-4 py-3 font-medium">Date</th><th class="px-4 py-3 text-right font-medium">Coût total</th></tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              @for (receipt of receipts(); track receipt.id) {
+                <tr>
+                  <td class="px-4 py-3"><span class="font-semibold">{{ receipt.number }}</span>@if (receipt.supplier_reference) { <span class="block text-xs text-ink/50">Facture {{ receipt.supplier_reference }}</span> }</td>
+                  <td class="px-4 py-3">{{ receipt.supplier.name }}</td>
+                  <td class="px-4 py-3">
+                    @for (item of receipt.items; track item.id) {
+                      <span class="block">{{ item.quantity }} × {{ item.product_name }} <span class="text-ink/50">({{ item.product_reference }}) · {{ formatPrice(item.unit_cost) }} / unité · {{ formatPrice(item.total_cost) }}</span></span>
+                    }
+                  </td>
+                  <td class="px-4 py-3">{{ receipt.received_at }}</td>
+                  <td class="px-4 py-3 text-right font-semibold">{{ formatPrice(receipt.total_cost) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (receiptLastPage() > 1) {
+          <div class="mt-4 flex items-center justify-center gap-4 text-sm">
+            <button type="button" (click)="goToReceiptPage(receiptPage() - 1)" [disabled]="receiptPage() <= 1" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Précédent</button>
+            <span>Page {{ receiptPage() }} sur {{ receiptLastPage() }}</span>
+            <button type="button" (click)="goToReceiptPage(receiptPage() + 1)" [disabled]="receiptPage() >= receiptLastPage()" class="rounded-full border border-line bg-white px-4 py-2 hover:border-cobalt disabled:opacity-30">Suivant</button>
+          </div>
+        }
+      }
+    </section>
+  }
+</div>
