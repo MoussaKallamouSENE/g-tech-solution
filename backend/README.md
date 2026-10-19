@@ -59,14 +59,29 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 Les migrations de suivi des notifications et des livraisons sont additives. Copiez `.env.example` vers `.env` à la racine du dépôt et définissez un mot de passe MySQL local; configurez `backend/.env` avec la même valeur dans `DB_PASSWORD` ainsi que `DB_CONNECTION=mysql`, `DB_HOST=db`, `DB_DATABASE=gtech` et `DB_USERNAME=root`. Pour un volume MySQL déjà initialisé, gardez son mot de passe existant : Compose ne modifie pas le mot de passe stocké dans ce volume.
 
+`MYSQL_ROOT_PASSWORD` (racine du dépôt) est désormais l’unique source de vérité : Compose l’injecte comme `DB_PASSWORD` dans les services `php`, `queue-worker` et `delivery-scheduler`. La valeur de `backend/.env` est donc ignorée par Docker, mais elle reste la référence pour une exécution de Laravel hors Docker. Si vous changez le mot de passe d’un volume déjà initialisé, exécutez également `ALTER USER 'root'@'%' IDENTIFIED BY '<nouveau mot de passe>';` dans le conteneur `db`, sinon Laravel recevra « Access denied for user ».
+
+L’URL publique du backend (`APP_URL`, port 80 via Nginx) sert à générer les liens vers les images téléversées. `FRONTEND_URL` pointe vers la boutique Angular (port 3000) et sert aux liens envoyés aux clients, comme la réinitialisation de mot de passe.
+
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 # Configurez MYSQL_ROOT_PASSWORD dans .env et la même valeur dans backend/.env.
 docker compose up -d --build nginx php db
 docker compose exec php php artisan migrate
+docker compose exec php php artisan db:seed
 docker compose up -d --build queue-worker delivery-scheduler
 docker compose logs -f queue-worker
 docker compose logs -f delivery-scheduler
+```
+
+`php artisan db:seed` est idempotent : il restaure le catalogue, les zones de livraison et le compte administrateur manquant sans jamais réécrire le mot de passe d’un compte existant.
+
+### Compte administrateur
+
+Le compte administrateur n’est plus écrit en clair dans le dépôt : il est décrit par `ADMIN_EMAIL`, `ADMIN_NAME`, `ADMIN_PHONE` et `ADMIN_PASSWORD` dans `backend/.env` (fichier non suivi par Git). Si `ADMIN_PASSWORD` est vide, un mot de passe aléatoire est généré puis affiché une seule fois dans la console au moment du seed. Un compte déjà présent n’est jamais réécrit : changer `ADMIN_PASSWORD` dans `.env` ne modifie donc pas un administrateur existant ; utilisez l’interface **Profil** ou la commande ci-dessous pour le changer.
+
+```powershell
+docker compose exec php php artisan tinker --execute 'App\Models\User::where("email", "senemoussa@gmail.com")->update(["password" => Illuminate\Support\Facades\Hash::make("VotreNouveauMotDePasse")]);'
 ```
 
 Ne lancez pas `migrate:fresh`, `db:wipe` ni de suppression du volume de données. `QUEUE_CONNECTION=database` utilise la table `jobs`; le worker Compose traite l’e-mail et WhatsApp hors de la requête HTTP. Les erreurs permanentes restent visibles dans la commande et une nouvelle tentative peut être demandée par un administrateur depuis la fiche de commande.

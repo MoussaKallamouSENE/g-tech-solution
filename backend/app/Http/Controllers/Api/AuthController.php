@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -81,7 +80,7 @@ class AuthController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'phone' => ['nullable', 'string', 'max:30'],
         ], [
             'name.required' => 'Le nom est obligatoire.',
@@ -153,7 +152,7 @@ class AuthController extends Controller
         Log::info('Lien de réinitialisation de mot de passe', [
             'email' => $email,
             'token' => $token,
-            'url' => config('app.url') . '/reset-password?token=' . $token . '&email=' . urlencode($email),
+            'url' => config('app.frontend_url').'/reset-password?token='.$token.'&email='.urlencode($email),
         ]);
 
         return response()->json([

@@ -17,6 +17,8 @@ if (!$user) {
     echo "Email: " . $user->email . "\n";
     echo "Role: " . $user->role . "\n";
     echo "Password hash (first 30 chars): " . substr($user->password, 0, 30) . "...\n";
-    $ok = password_verify('182342GENEral', $user->password);
+    // Le mot de passe est lu dans l'environnement (ADMIN_PASSWORD) et n'est
+    // jamais écrit en clair dans le dépôt.
+    $ok = password_verify((string) env('ADMIN_PASSWORD', ''), $user->password);
     echo "Password match: " . ($ok ? 'YES' : 'NO') . "\n";
 }

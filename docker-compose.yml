@@ -15,14 +15,24 @@ services:
     container_name: gtech_php
     env_file:
       - ./backend/.env
+    environment:
+      # Toujours aligné sur le mot de passe root du service db (cf. MYSQL_ROOT_PASSWORD).
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
     volumes:
       - ./backend:/var/www/html
+    depends_on:
+      - db
+    restart: unless-stopped
 
   queue-worker:
     build: ./php
     container_name: gtech_queue_worker
     command: php artisan queue:work database --queue=default --tries=5 --timeout=60
     restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
     volumes:
       - ./backend:/var/www/html
     depends_on:
@@ -33,6 +43,10 @@ services:
     container_name: gtech_delivery_scheduler
     command: php artisan schedule:work
     restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
     volumes:
       - ./backend:/var/www/html
     depends_on:

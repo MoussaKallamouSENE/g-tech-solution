@@ -40,11 +40,21 @@ class CatalogueSeeder extends Seeder
 
         foreach ($products as $data) {
             $data['category_id'] = $ids[$data['cat']];
-            $data['slug'] = Str::slug($data['name']);
             $data['is_active'] = true;
             unset($data['cat']);
 
-            Product::updateOrCreate(['reference' => $data['reference']], $data);
+            $product = Product::where('reference', $data['reference'])->first();
+
+            if ($product) {
+                // Le produit existe déjà : on met à jour les données du catalogue
+                // en conservant le slug (qui a pu être personnalisé depuis l'admin).
+                $product->fill($data)->save();
+
+                continue;
+            }
+
+            $data['slug'] = Str::slug($data['name']);
+            Product::create($data);
         }
     }
 }

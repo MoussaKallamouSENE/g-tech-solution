@@ -12,7 +12,10 @@ RUN npm run build
 # Stage 2: Serveur Nginx pour les fichiers statiques
 FROM nginx:stable-alpine
 
-COPY --from=builder /app/dist/gtech-frontend /usr/share/nginx/html
+# Le builder Angular place la compilation dans dist/gtech-frontend/browser :
+# on copie ce contenu à la racine servie par nginx (sinon la page d'accueil
+# par défaut de nginx est affichée à la place de l'application).
+COPY --from=builder /app/dist/gtech-frontend/browser /usr/share/nginx/html
 
 # Configuration Nginx pour le reverse proxy vers l'API Laravel
 COPY nginx.conf /etc/nginx/conf.d/default.conf
