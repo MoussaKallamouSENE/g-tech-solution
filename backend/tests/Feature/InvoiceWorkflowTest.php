@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\Order;
 use App\Models\Category;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,6 +12,11 @@ use Tests\TestCase;
 class InvoiceWorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * Compteur utilisé pour générer des numéros de commande uniques.
+     */
+    private static int $sequence = 0;
 
     public function test_only_the_order_customer_or_an_admin_can_download_an_invoice_with_real_order_values(): void
     {
@@ -55,21 +60,29 @@ class InvoiceWorkflowTest extends TestCase
             'warranty_conditions_snapshot' => 'Garantie spécifique enregistrée à la vente.',
         ]);
 
-        $html = view('invoice', [
-            'order' => $order->fresh(['items', 'zone']),
-            'company' => config('invoice.company'),
-        ])->render();
+        $html = $this->renderInvoice($order->fresh(['items', 'zone']));
 
+        // La référence réelle de la facture et le numéro de commande sont affichés.
         $this->assertStringContainsString($order->invoice_number, $html);
-        $this->assertStringContainsString('1 200 000 FCFA', $html);
-        $this->assertStringContainsString('25 000 FCFA', $html);
-        $this->assertStringContainsString('1 225 000 FCFA', $html);
+        $this->assertStringContainsString($order->number, $html);
+        $this->assertStringContainsString('FA-'.substr($order->number, 3), $html);
+
+        // Les montants affichés proviennent de la commande enregistrée.
+        $this->assertStringContainsString($this->money(1_200_000).' FCFA', $html);
+        $this->assertStringContainsString($this->money(25_000).' FCFA', $html);
+        $this->assertStringContainsString($this->money(1_225_000).' FCFA', $html);
+
+        // L'instantané de vente et les conditions de garantie sont restitués.
         $this->assertStringContainsString('Garantie spécifique enregistrée à la vente.', $html);
         $this->assertStringContainsString('carte mère pendant 6 mois', $html);
         $this->assertStringContainsString('Core i7', $html);
+        $this->assertStringContainsString('16 Go', $html);
+
+        // Le paiement n'est pas suivi par le système.
         $this->assertStringContainsString('Montant payé : non enregistré dans le système', $html);
+        $this->assertStringContainsString('Reste à payer : non calculable (paiement non suivi)', $html);
         $this->assertStringContainsString('droits légaux du client', $html);
-        $this->assertStringNotContainsString('Reste à payer : 1 225 000 FCFA', $html);
+        $this->assertStringNotContainsString('Reste à payer : '.$this->money(1_225_000).' FCFA', $html);
     }
 
     public function test_legacy_invoice_shows_available_product_characteristics_as_current_not_historical(): void
@@ -102,17 +115,82 @@ class InvoiceWorkflowTest extends TestCase
         $item = $order->items()->firstOrFail();
         $item->update(['product_id' => $product->id, 'product_specs_snapshot' => null]);
 
-        $html = view('invoice', [
-            'order' => $order->fresh(['items.product', 'zone']),
-            'company' => config('invoice.company'),
-        ])->render();
+        $html = $this->renderInvoice($order->fresh(['items.product', 'zone']));
 
+        // Sans instantané, les caractéristiques actuelles sont signalées comme telles.
         $this->assertStringContainsString('Caractéristiques actuelles — non archivées lors de la vente', $html);
         $this->assertStringContainsString('Core i9', $html);
         $this->assertStringContainsString('32 Go', $html);
         $this->assertStringContainsString('SSD 1 To', $html);
         $this->assertStringContainsString('RTX 4060', $html);
         $this->assertStringContainsString('15 pouces', $html);
+    }
+
+    public function test_invoice_prints_shop_details_only_when_they_are_configured(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $order = $this->createOrder($customer);
+
+        config([
+            'shop.address' => '',
+            'shop.phone' => '',
+            'shop.email' => '',
+            'shop.ninea' => '',
+            'shop.rccm' => '',
+        ]);
+
+        $html = $this->renderInvoice($order);
+
+        $this->assertStringContainsString('Dakar, Sénégal', $html);
+        $this->assertStringNotContainsString('NINEA', $html);
+        $this->assertStringNotContainsString('RCCM', $html);
+
+        config([
+            'shop.address' => 'Plateau',
+            'shop.phone' => '+221 77 000 00 00',
+            'shop.email' => 'contact@gtech.sn',
+            'shop.ninea' => 'NINEA123',
+            'shop.rccm' => 'RCCM456',
+        ]);
+
+        $html = $this->renderInvoice($order);
+
+        $this->assertStringContainsString('Plateau, Dakar, Sénégal', $html);
+        $this->assertStringContainsString('+221 77 000 00 00 · contact@gtech.sn', $html);
+        $this->assertStringContainsString('NINEA : NINEA123 · RCCM : RCCM456', $html);
+    }
+
+    public function test_invoice_access_is_limited_to_the_order_owner_and_administrators(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $otherCustomer = User::factory()->create(['role' => 'customer']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = $this->createOrder($customer);
+        $cancelledOrder = $this->createOrder($customer, 'cancelled');
+
+        // Le propriétaire de la commande reçoit le PDF.
+        $this->actingAs($customer, 'sanctum')
+            ->get('/api/orders/'.$order->id.'/invoice')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertSee('%PDF-', false);
+
+        // L'administrateur reçoit le PDF.
+        $this->actingAs($admin, 'sanctum')
+            ->get('/api/orders/'.$order->id.'/invoice')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertSee('%PDF-', false);
+
+        // Un autre client n'a pas accès à cette commande.
+        $this->actingAs($otherCustomer, 'sanctum')
+            ->getJson('/api/orders/'.$order->id.'/invoice')
+            ->assertNotFound();
+
+        // Une commande annulée ne produit pas de facture.
+        $this->actingAs($customer, 'sanctum')
+            ->getJson('/api/orders/'.$cancelledOrder->id.'/invoice')
+            ->assertUnprocessable();
     }
 
     public function test_cancelled_orders_do_not_produce_invoice_pdfs(): void
@@ -125,11 +203,30 @@ class InvoiceWorkflowTest extends TestCase
             ->assertUnprocessable();
     }
 
+    /**
+     * Rend le modèle de facture comme le fait OrderController::invoice().
+     */
+    private function renderInvoice(Order $order): string
+    {
+        return view('invoice', [
+            'order' => $order,
+            'company' => config('invoice.company'),
+        ])->render();
+    }
+
+    /**
+     * Format monétaire identique à celui du modèle de facture.
+     */
+    private function money(int $amount): string
+    {
+        return number_format($amount, 0, ',', "\u{00A0}");
+    }
+
     private function createOrder(User $customer, string $status = 'confirmed'): Order
     {
         $order = Order::create([
             'user_id' => $customer->id,
-            'number' => 'GT-'.str_pad((string) random_int(1, 999999), 6, '0', STR_PAD_LEFT),
+            'number' => 'GT-'.str_pad((string) ++self::$sequence, 6, '0', STR_PAD_LEFT),
             'customer_name' => 'Aminata Ndiaye',
             'customer_phone' => '+221 77 123 45 67',
             'customer_address' => 'Dakar, Plateau, Rue 12',

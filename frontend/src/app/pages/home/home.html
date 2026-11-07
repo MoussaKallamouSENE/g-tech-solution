@@ -237,7 +237,7 @@
                     <button type="button" (click)="addToCart($event, product)" [disabled]="product.stock < 1" class="min-h-9 rounded-lg bg-cobalt px-2 text-xs font-semibold text-white hover:bg-cobalt-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cobalt disabled:cursor-not-allowed disabled:bg-slate-300">
                       {{ product.stock > 0 ? 'Ajouter' : 'Indisponible' }}
                     </button>
-                    <a [routerLink]="['/produits', product.id]" class="inline-flex min-h-9 items-center justify-center rounded-lg border border-line px-2 text-xs font-semibold text-ink hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Détails</a>
+                    <button type="button" (click)="openDetails(product)" class="inline-flex min-h-9 items-center justify-center rounded-lg border border-line px-2 text-xs font-semibold text-ink hover:border-cobalt hover:text-cobalt focus-visible:outline-2 focus-visible:outline-cobalt">Détails</button>
                   </div>
                 </div>
               </div>
@@ -257,3 +257,7 @@
     </div>
   </div>
 </main>
+
+@if (detailProduct(); as detail) {
+  <app-product-modal [product]="detail" (closed)="closeDetails()" />
+}

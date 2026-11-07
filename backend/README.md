@@ -63,6 +63,14 @@ Les migrations de suivi des notifications et des livraisons sont additives. Copi
 
 L’URL publique du backend (`APP_URL`, port 80 via Nginx) sert à générer les liens vers les images téléversées. `FRONTEND_URL` pointe vers la boutique Angular (port 3000) et sert aux liens envoyés aux clients, comme la réinitialisation de mot de passe.
 
+L’image PHP désactive la revalidation des horodatages d’opcache (`opcache.validate_timestamps=0`). Sur un bind mount hôte, la revalidation controllingait plus de 8 000 fichiers à chaque requête et chaque appel API prenait plusieurs secondes ; elle est désormais de l’ordre de 300 ms. **Conséquence : après une modification du code PHP, redémarrez le service pour recharger les fichiers** :
+
+```powershell
+docker compose restart php
+```
+
+Le service `php` précharge opcache au démarrage (`post_start`), la première requête qui suit un redémarrage est donc déjà rapide.
+
 ```powershell
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 # Configurez MYSQL_ROOT_PASSWORD dans .env et la même valeur dans backend/.env.

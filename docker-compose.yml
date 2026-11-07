@@ -1,9 +1,11 @@
+name: gtech-internal
+
 services:
   nginx:
     image: nginx:stable
     container_name: gtech_nginx
     ports:
-      - "80:80"
+      - "127.0.0.1:8088:80"
     volumes:
       - ./backend:/var/www/html
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
@@ -12,20 +14,27 @@ services:
 
   php:
     build: ./php
+    user: "1000:1000"
     container_name: gtech_php
     env_file:
       - ./backend/.env
     environment:
       # Toujours aligné sur le mot de passe root du service db (cf. MYSQL_ROOT_PASSWORD).
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
+      LOG_CHANNEL: stderr
     volumes:
       - ./backend:/var/www/html
     depends_on:
       - db
     restart: unless-stopped
+    # Précharge opcache : sans cela, la première requête après un démarrage
+    # recompile l'ensemble des fichiers et prend une dizaine de secondes.
+    post_start:
+      - command: "php -r 'usleep(3000000); @file_get_contents(\"http://nginx/api/products\");'"
 
   queue-worker:
     build: ./php
+    user: "1000:1000"
     container_name: gtech_queue_worker
     command: php artisan queue:work database --queue=default --tries=5 --timeout=60
     restart: unless-stopped
@@ -33,6 +42,7 @@ services:
       - ./backend/.env
     environment:
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
+      LOG_CHANNEL: stderr
     volumes:
       - ./backend:/var/www/html
     depends_on:
@@ -40,6 +50,7 @@ services:
 
   delivery-scheduler:
     build: ./php
+    user: "1000:1000"
     container_name: gtech_delivery_scheduler
     command: php artisan schedule:work
     restart: unless-stopped
@@ -47,6 +58,7 @@ services:
       - ./backend/.env
     environment:
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
+      LOG_CHANNEL: stderr
     volumes:
       - ./backend:/var/www/html
     depends_on:
@@ -59,7 +71,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in the project .env file}
       MYSQL_DATABASE: gtech
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - dbdata:/var/lib/mysql
 
@@ -67,7 +79,7 @@ services:
     image: phpmyadmin
     container_name: gtech_phpmyadmin
     ports:
-      - "8080:80"
+      - "127.0.0.1:8081:80"
     environment:
       PMA_HOST: db
     depends_on:
@@ -77,7 +89,7 @@ services:
     build: ./frontend
     container_name: gtech_frontend
     ports:
-      - "3000:80"
+      - "127.0.0.1:3000:80"
     depends_on:
       - nginx
     restart: unless-stopped

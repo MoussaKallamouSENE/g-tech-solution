@@ -71,6 +71,17 @@
         }
       </div>
     </div>
+  } @else if (loading()) {
+    <div class="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div class="skel aspect-square w-full rounded-[1.25rem]"></div>
+      <div class="space-y-4">
+        <div class="skel h-3 w-24 rounded"></div>
+        <div class="skel h-8 w-3/4 rounded"></div>
+        <div class="skel h-4 w-1/2 rounded"></div>
+        <div class="skel h-10 w-40 rounded"></div>
+        <div class="skel h-24 w-full rounded-xl"></div>
+      </div>
+    </div>
   } @else {
     <div class="card mt-8 p-10">
       <h1 class="font-display text-2xl font-extrabold">Produit introuvable</h1>

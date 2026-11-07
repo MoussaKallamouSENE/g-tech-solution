@@ -6,10 +6,11 @@ import { CatalogueService, ProductFilters } from '../../services/catalogue.servi
 import { Category, Paginated, Product } from '../../models/catalogue';
 import { CartService } from '../../services/cart.service';
 import { errorMessage as getErrorMessage } from '../../services/auth.service';
+import { ProductModal } from '../../components/product-modal/product-modal';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, ProductModal],
   templateUrl: './home.html',
 })
 export class Home {
@@ -29,6 +30,7 @@ export class Home {
   protected readonly metadataError = signal(false);
   protected readonly failedImages = signal<number[]>([]);
   protected readonly addedProductId = signal<number | null>(null);
+  protected readonly detailProduct = signal<Product | null>(null);
 
   protected readonly categories = signal<Category[]>([]);
   protected readonly brands = signal<string[]>([]);
@@ -233,6 +235,21 @@ export class Home {
     window.setTimeout(() => {
       if (this.addedProductId() === product.id) this.addedProductId.set(null);
     }, 2500);
+  }
+
+  /**
+   * Ouvre la fiche produit en surimpression du catalogue.
+   */
+  protected openDetails(product: Product): void {
+    this.addedProductId.set(null);
+    this.detailProduct.set(product);
+  }
+
+  /**
+   * Referme la fiche produit : le catalogue retrouve sa position de défilement.
+   */
+  protected closeDetails(): void {
+    this.detailProduct.set(null);
   }
 
   protected optionClass(active: boolean): string {

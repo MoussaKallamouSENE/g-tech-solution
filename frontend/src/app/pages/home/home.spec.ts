@@ -69,7 +69,8 @@ describe('Home catalogue', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    const buttons = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('article button'));
+    const buttons = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLButtonElement>('article button'))
+      .filter((button) => button.textContent?.trim() === 'Ajouter' || button.textContent?.trim() === 'Indisponible');
     buttons[0].click();
     fixture.detectChanges();
 
@@ -101,7 +102,75 @@ describe('Home catalogue', () => {
       queryParamsHandling: 'merge',
     });
   });
+
+  it('shows the real product details in a modal above the catalogue and closes it with the cross', async () => {
+    const fixture = await renderHome();
+    const element = fixture.nativeElement as HTMLElement;
+
+    detailsButton(element).click();
+    fixture.detectChanges();
+
+    const dialog = element.querySelector('[role="dialog"]');
+    expect(dialog).not.toBeNull();
+    expect(dialog!.getAttribute('aria-modal')).toBe('true');
+    expect(dialog!.textContent).toContain('Portable avec image');
+    expect(dialog!.textContent).toContain('FCFA');
+    expect(dialog!.textContent).toContain('Portable pour les tests');
+    expect(dialog!.textContent).toContain('Intel Core i5');
+    expect(dialog!.textContent).toContain('16 Go');
+    expect(dialog!.querySelector('img[alt="Portable avec image"]')).not.toBeNull();
+    expect(document.body.style.overflow).toBe('hidden');
+
+    dialog!.querySelector<HTMLButtonElement>('button[aria-label="Fermer la fiche produit"]')!.click();
+    fixture.detectChanges();
+
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('closes the product details with the Escape key', async () => {
+    const fixture = await renderHome();
+    const element = fixture.nativeElement as HTMLElement;
+
+    detailsButton(element).click();
+    fixture.detectChanges();
+    expect(element.querySelector('[role="dialog"]')).not.toBeNull();
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('closes the product details when the backdrop is clicked', async () => {
+    const fixture = await renderHome();
+    const element = fixture.nativeElement as HTMLElement;
+
+    detailsButton(element).click();
+    fixture.detectChanges();
+
+    const backdrop = element.querySelector<HTMLElement>('[role="dialog"]')!.parentElement!;
+    backdrop.click();
+    fixture.detectChanges();
+
+    expect(element.querySelector('[role="dialog"]')).toBeNull();
+  });
 });
+
+async function renderHome() {
+  const fixture = TestBed.createComponent(Home);
+  fixture.detectChanges();
+  await fixture.whenStable();
+  fixture.detectChanges();
+  return fixture;
+}
+
+function detailsButton(element: HTMLElement): HTMLButtonElement {
+  return Array.from(element.querySelectorAll<HTMLButtonElement>('article button')).find(
+    (button) => button.textContent?.trim() === 'Détails',
+  )!;
+}
 
 function product(overrides: Partial<Product> = {}): Product {
   return {
